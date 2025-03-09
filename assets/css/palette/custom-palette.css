@@ -20,6 +20,10 @@
     strong {
         color: #c9184a;
     }
+
+    img {
+        width: 100%;
+    }
 }
 
 .dark {
