@@ -1,0 +1,64 @@
+baseURL = 'https://example.org/'
+languageCode = 'en-us'
+title = 'Gaston Otero'
+
+theme = 'not-much'
+
+
+# Navigation
+[menu]
+    [[menu.main]]
+    identifier = "about"
+    name = "about"
+    title = "About"
+    url = "/"
+    weight = 1
+
+    [[menu.main]]
+    identifier = "resume"
+    name = "resume"
+    title = "resume"
+    url = "/resume"
+    weight = 2
+
+    [[menu.main]]
+    identifier = "blog"
+    name = "blog"
+    title = "blog"
+    url = "/blog"
+    weight = 3
+
+    [[menu.main]]
+    identifier = "projects"
+    name = "projects"
+    title = "projects"
+    url = "/projects"
+    weight = 4
+
+    [[menu.main]]
+    identifier = "github"
+    name = "github"
+    title = "GitHub"
+    url = "https://github.com/gastonoterom"
+    weight = 5
+
+    [[menu.main]]
+    identifier = "linkedin"
+    name = "linkedin"
+    title = "Linkedin"
+    url = "https://www.linkedin.com/in/gaston-otero/"
+    weight = 6
+
+    [[menu.main]]
+    identifier = "mail"
+    name = "mail"
+    title = "mail"
+    url = "mailto:mail@gastonotero.com"
+    weight = 7
+
+
+# Styles
+[params]
+    theme = "dark"
+    palette = "default"
+    copyright = "© {year}"

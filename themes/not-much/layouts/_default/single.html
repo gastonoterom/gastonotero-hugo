@@ -1,0 +1,31 @@
+{{ define "main" }}
+  <div class="container pt-5">
+    <div class="row mt-5 pt-5">
+      {{ partial "menu.html" (dict "menuID" "main" "page" .) }}
+    </div>
+    <div class="post">
+      <header class="mb-5">
+        <h1 class="text-uppercase">{{ .Title }}</h1>
+        {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
+        {{ $dateHuman := .Date | time.Format ":date_long" }}
+        <div aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item small">
+              <time datetime="{{ $dateMachine }}">{{ $dateHuman }}</time>
+            </li>
+            <li class="breadcrumb-item small">
+              {{ printf "%d minutes" .ReadingTime }}
+            </li>
+          </ol>
+        </div>
+      </header>
+      <article>
+        {{ .Content }}
+      </article>
+      {{ partial "terms.html" (dict "taxonomy" "tags" "page" .) }}
+    </div>
+  </div>
+  <footer>
+    {{ partial "footer.html" . }}
+  </footer>
+{{ end }}

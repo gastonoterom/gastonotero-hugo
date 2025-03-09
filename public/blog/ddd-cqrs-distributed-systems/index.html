@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="shortcut icon" type="image/png" href="http://localhost:1313/favicon.ico" />
+<meta property="og:url" content="http://localhost:1313/blog/ddd-cqrs-distributed-systems/">
+  <meta property="og:site_name" content="Gaston Otero">
+  <meta property="og:title" content="DDD, CQRS and Distributed Systems in Python">
+  <meta property="og:description" content="Revisiting DDD (Domain Driven Design), CQRS (Command Query Responsibility Segregation), and Distributed Systems concepts in python">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-03-08T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-03-08T00:00:00+00:00">
+
+<title>Gaston Otero | DDD, CQRS and Distributed Systems in Python</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+  
+      <link rel="stylesheet" href="/css/palette/default.css">
+
+      <script src="/js/main.js"></script>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+</head>
+
+  
+<body
+    class="dark text-light"
+>
+  
+  <main>
+    
+  <div class="container pt-5">
+    <div class="row mt-5 pt-5">
+      
+  <nav aria-label="breadcrumb" class="small">
+    <ol class="breadcrumb fw-bold">
+    <li class="breadcrumb-item">
+      <a href="/"
+        
+      >about</a>
+      
+    </li>
+    <li class="breadcrumb-item">
+      <a href="/resume"
+        
+      >resume</a>
+      
+    </li>
+    <li class="breadcrumb-item">
+      <a href="/blog"
+        class="text-decoration-underline link-offset-3"
+        
+      >blog</a>
+      
+    </li>
+    <li class="breadcrumb-item">
+      <a href="/projects"
+        
+      >projects</a>
+      
+    </li>
+    <li class="breadcrumb-item">
+      <a href="https://github.com/gastonoterom"
+        
+          target="_blank" rel="noopener noreferrer"
+        
+      >github</a>
+      
+    </li>
+    <li class="breadcrumb-item">
+      <a href="https://www.linkedin.com/in/gaston-otero/"
+        
+          target="_blank" rel="noopener noreferrer"
+        
+      >linkedin</a>
+      
+    </li>
+    <li class="breadcrumb-item">
+      <a href="mailto:mail@gastonotero.com"
+        
+      >mail</a>
+      
+    </li>
+    </ol>
+  </nav>
+
+    </div>
+    <div class="post">
+      <header class="mb-5">
+        <h1 class="text-uppercase">DDD, CQRS and Distributed Systems in Python</h1>
+        
+        
+        <div aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item small">
+              <time datetime="2025-03-08T00:00:00&#43;00:00">March 8, 2025</time>
+            </li>
+            <li class="breadcrumb-item small">
+              12 minutes
+            </li>
+          </ol>
+        </div>
+      </header>
+      <article>
+        <p><em>This article will be based on a sample application called Satoshi Spark 🚀 🔥</em></p>
+<p>This is the Github repository for the full project: <a href="https://github.com/gastonoterom/Satoshi-Spark">Satoshi Spark Source Code</a></p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li>Introduction</li>
+<li>Domain-Driven Design (DDD)
+<ul>
+<li>Aggregates: the building block of our domain</li>
+<li>Abstract Repositories: avoid the ORM jail</li>
+<li>Unit of Work: How to handle database transactions in the domain model</li>
+</ul>
+</li>
+<li>Command Query Responsibility Segregation (CQRS)
+<ul>
+<li>Write model</li>
+<li>Read model</li>
+</ul>
+</li>
+<li>Distributed Systems
+<ul>
+<li>Transactional Outboxes: handle message reliability</li>
+<li>Choreography Based Sagas: distributed transactions across contexts</li>
+<li>From monolith to microservices</li>
+</ul>
+</li>
+</ul>
+<h2 id="introduction">Introduction</h2>
+<p>Satoshi Spark is designed to facilitate crowdfunding campaigns via the Bitcoin Lightning Network.</p>
+<p>This little project is a playground for exploring Domain-Driven Design (DDD),
+Command Query Responsibility Segregation (CQRS), and distributed systems concepts.</p>
+<h2 id="domain-driven-design-ddd">Domain-Driven Design (DDD)</h2>
+<p>The project follows DDD principles to ensure a clear and maintainable codebase.</p>
+<p>Satoshi Spark is organized into several bounded contexts, each representing a distinct part of the domain:</p>
+<ul>
+<li><strong>Common</strong>: Contains abstract and basic aggregate/ports/adapter definitions.</li>
+<li><strong>Auth</strong>: Handles authentication and user management.</li>
+<li><strong>Accounting</strong>: Manages account balances and transactions.</li>
+<li><strong>Crowdfunding</strong>: Manages crowdfunding campaigns and donations.</li>
+<li><strong>Bitcoin</strong>: Manages Bitcoin Lightning Network-related operations, such as invoices.</li>
+<li><strong>Dashboard</strong>: Provides a read-only context where users can view their activities.</li>
+</ul>
+<p>Each bounded context encapsulates its own domain logic and interacts with other contexts only through messages.</p>
+<h3 id="aggregates-the-building-block-of-our-domain">Aggregates: the building block of our domain</h3>
+<p>In Domain-Driven Design (DDD), aggregates define consistency boundaries in the write domain, ensuring that all changes within them maintain business rules and integrity.
+Each aggregate consists of closely related entities and has a root entity that controls modifications.</p>
+<p>Repository operations only retrieve and persist aggregate roots.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Aggregate</span>(ABC):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, entity_id: str) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__entity_id <span style="color:#f92672">=</span> entity_id
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@property</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">entity_id</span>(self) <span style="color:#f92672">-&gt;</span> str:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>__entity_id
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __eq__(self, other) <span style="color:#f92672">-&gt;</span> bool:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> isinstance(other, Aggregate):
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">False</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>entity_id <span style="color:#f92672">==</span> other<span style="color:#f92672">.</span>entity_id
+</span></span></code></pre></div><h3 id="abstract-repositories-avoid-the-orm-jail">Abstract Repositories: avoid the ORM jail</h3>
+<p>Repositories are used to abstract the persistence layer from the domain.
+Here (in DDD-land), we don&rsquo;t want to couple the domain with a specific database or ORM implementation.</p>
+<h4 id="example-coupling-our-domain-with-some-specific-orm-or-db-implementation">Example: Coupling our domain with some specific ORM or DB implementation</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> orm_library
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CampaignAggregate</span>(orm_library<span style="color:#f92672">.</span>ORMClass):
+</span></span><span style="display:flex;"><span>    entity_id <span style="color:#f92672">=</span> orm_library<span style="color:#f92672">.</span>ORMColumn(type<span style="color:#f92672">=</span>orm_library<span style="color:#f92672">.</span>types<span style="color:#f92672">.</span>String)
+</span></span><span style="display:flex;"><span>    goal <span style="color:#f92672">=</span> orm_library<span style="color:#f92672">.</span>ORMColumn(type<span style="color:#f92672">=</span>orm_library<span style="color:#f92672">.</span>types<span style="color:#f92672">.</span>Integer)
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">...</span> 
+</span></span></code></pre></div><p>Can you see the &lsquo;problem&rsquo; with this code?</p>
+<p>What if we want to change the ORM library?
+How can we write unit tests without being at the mercy of the ORM library?</p>
+<p>The solution? Reverse the dependencies.</p>
+<p>The domain will define repository interfaces (ports), and later we can define specific implementations (adapters) for the ORM library or database we choose.</p>
+<h4 id="example-abstract-repository">Example: Abstract Repository</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># See how our new aggregate is not coupled with any specific ORM or DB implementation</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Campaign</span>(Aggregate):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, entity_id: str, goal: int, <span style="color:#f92672">...</span>) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__(entity_id)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>goal <span style="color:#f92672">=</span> goal
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">...</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Generic abstract repository class (no support for DB transactions yet, see next topic for it)</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Repository</span>[T: Aggregate](ABC):
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">find_by_id</span>(self, entity_id: str) <span style="color:#f92672">-&gt;</span> T <span style="color:#f92672">|</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">add</span>(self, entity: T) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">update</span>(self, entity: T) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CampaignRepository</span>(Repository[Campaign], ABC):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">pass</span>
+</span></span></code></pre></div><p>I suspect you can already guess the overall idea on how to implement a specific repository for a Postgres database, right? 😉</p>
+<p>If not, don&rsquo;t worry! There are plenty of examples in the codebase.</p>
+<p>You can also submit a PR to add more examples for different libraries or engines!</p>
+<h3 id="unit-of-work-how-to-handle-database-transactions-in-the-domain-model">Unit of Work: How to handle database transactions in the domain model</h3>
+<p>If you&rsquo;ve been paying closed attention, you&rsquo;ll notice that we haven&rsquo;t talked about transactions at all.</p>
+<p>Creating database transactions is trivial,
+but how can we ensure the domain does not become polluted with database-specific code?</p>
+<p>The answer is&hellip; Units of Work!</p>
+<p>The Unit of Work pattern is used to manage transactions and ensure data consistency.
+It tracks changes to aggregates and commits them as a single transaction.
+This pattern represents an abstraction for any database (SQL or not) transaction,
+de-coupling the domain from particular database implementations.</p>
+<h4 id="example-uow-in-action">Example: UOW in action</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">register_campaign_donation</span>(
+</span></span><span style="display:flex;"><span>    command: TransferSucceededEvent,
+</span></span><span style="display:flex;"><span>) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Entering this context manager creates a uow and starts a transaction</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">with</span> uow_factory() <span style="color:#66d9ef">as</span> uow:
+</span></span><span style="display:flex;"><span>        campaign_id: str <span style="color:#f92672">=</span> command<span style="color:#f92672">.</span>metadata[<span style="color:#e6db74">&#34;campaign_id&#34;</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        campaign: Campaign <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> campaign_repository(uow)<span style="color:#f92672">.</span>find_by_id(
+</span></span><span style="display:flex;"><span>            campaign_id
+</span></span><span style="display:flex;"><span>        )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Notice how we don&#39;t have to explicitly call any persistence method on the aggregate,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># as the UOW will take care of that for us</span>
+</span></span><span style="display:flex;"><span>        campaign<span style="color:#f92672">.</span>donate(
+</span></span><span style="display:flex;"><span>            Donation(
+</span></span><span style="display:flex;"><span>                idempotency_key<span style="color:#f92672">=</span>command<span style="color:#f92672">.</span>idempotency_key,
+</span></span><span style="display:flex;"><span>                amount<span style="color:#f92672">=</span>command<span style="color:#f92672">.</span>amount,
+</span></span><span style="display:flex;"><span>                account_id<span style="color:#f92672">=</span>command<span style="color:#f92672">.</span>from_account_id,
+</span></span><span style="display:flex;"><span>            )
+</span></span><span style="display:flex;"><span>        )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Leaving the context manager will: </span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># * persist the aggregate changes</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># * store the messages in the transactional outbox</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># * commit the transaction</span>
+</span></span></code></pre></div><h4 id="example-abstract-unit-of-work">Example: Abstract Unit of Work</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># Abstract unit of work (UOW)</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">UnitOfWork</span>(ABC):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>_messages: list[Message] <span style="color:#f92672">=</span> []  <span style="color:#75715e"># The domain emits event to the UOW</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>_tracked_objects: list[tuple[object, Callable]] <span style="color:#f92672">=</span> []  <span style="color:#75715e"># The UOW keeps track of aggregates to persist their changes </span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">emit</span>(self, message: Message) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>_messages<span style="color:#f92672">.</span>append(message)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Before commit, the UOW calls the persistence callback of each tracked object</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># and stores the messages in a transactional outbox (more on this later)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">commit</span>(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> obj, persistence_callback <span style="color:#f92672">in</span> self<span style="color:#f92672">.</span>_tracked_objects:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">await</span> persistence_callback()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> outbox(self)<span style="color:#f92672">.</span>store(self<span style="color:#f92672">.</span>_messages)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>_commit()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">rollback</span>(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>_messages<span style="color:#f92672">.</span>clear()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>_tracked_objects<span style="color:#f92672">.</span>clear()
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>_rollback()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_commit</span>(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_rollback</span>(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span></code></pre></div><h4 id="example-abstract-repository-implementation">Example: Abstract Repository implementation</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># Generic abstract repository class</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Repository</span>[T: Aggregate](ABC):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># We initialize the repository with a UOW</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, uow: UnitOfWork) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__uow <span style="color:#f92672">=</span> uow
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__track_object</span>(self, obj: T) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__uow<span style="color:#f92672">.</span>track_object(obj, <span style="color:#66d9ef">lambda</span>: self<span style="color:#f92672">.</span>_update(obj))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Every time we add or we find an object, we track it so they are persisted on-commit</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">add</span>(self, entity: T) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>_add(entity)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__track_object(entity)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">find_by_id</span>(self, entity_id: str) <span style="color:#f92672">-&gt;</span> T <span style="color:#f92672">|</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        obj <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>_find_by_id(entity_id)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> obj <span style="color:#f92672">is</span> <span style="color:#f92672">not</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>__track_object(obj)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> obj
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_find_by_id</span>(self, entity_id: str) <span style="color:#f92672">-&gt;</span> T <span style="color:#f92672">|</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_add</span>(self, entity: T) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_update</span>(self, entity: T) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span></code></pre></div><h4 id="example-postgres-unit-of-work-implementation">Example: Postgres Unit Of Work implementation</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># Postgres specific implementation</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PostgresUnitOfWork</span>(UnitOfWork):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, conn: asyncpg<span style="color:#f92672">.</span>Connection, transaction: Transaction) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__conn <span style="color:#f92672">=</span> conn
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__transaction <span style="color:#f92672">=</span> transaction
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@property</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">conn</span>(self) <span style="color:#f92672">-&gt;</span> asyncpg<span style="color:#f92672">.</span>Connection:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>__conn
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_commit</span>(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>__transaction<span style="color:#f92672">.</span>commit()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_rollback</span>(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>__transaction<span style="color:#f92672">.</span>rollback()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Postgres UOW context manager factory</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@contextlib.asynccontextmanager</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">make_postgres_unit_of_work</span>() <span style="color:#f92672">-&gt;</span> AsyncGenerator[PostgresUnitOfWork, <span style="color:#66d9ef">None</span>]:
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">with</span> postgres_pool<span style="color:#f92672">.</span>get_pool()<span style="color:#f92672">.</span>acquire() <span style="color:#66d9ef">as</span> conn:
+</span></span><span style="display:flex;"><span>        transaction <span style="color:#f92672">=</span> conn<span style="color:#f92672">.</span>transaction(isolation<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;repeatable_read&#34;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> transaction<span style="color:#f92672">.</span>start()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        uow <span style="color:#f92672">=</span> PostgresUnitOfWork(
+</span></span><span style="display:flex;"><span>            conn,
+</span></span><span style="display:flex;"><span>            transaction,
+</span></span><span style="display:flex;"><span>        )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">yield</span> uow
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">await</span> uow<span style="color:#f92672">.</span>commit()
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">BaseException</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">await</span> uow<span style="color:#f92672">.</span>rollback()
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">raise</span>
+</span></span></code></pre></div><p>I hope this covers the previous commented part of the repository implementation 😅.</p>
+<h2 id="command-query-responsibility-segregation-cqrs">Command Query Responsibility Segregation (CQRS)</h2>
+<p>CQRS is used to separate the read and write operations of the application.
+Commands are used to change the state of the system, while queries are used to retrieve data.</p>
+<h3 id="write-model">Write model</h3>
+<p>Commands are written as imperative verbs (do something&hellip;), while events are written as past verbs (something happened&hellip;).</p>
+<h4 id="example-command-and-event">Example: Command and Event</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># Crowdfunding context example command:</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@dataclass</span>(frozen<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CreateCampaign</span>(Command):
+</span></span><span style="display:flex;"><span>    entity_id: str
+</span></span><span style="display:flex;"><span>    account_id: str
+</span></span><span style="display:flex;"><span>    title: str
+</span></span><span style="display:flex;"><span>    description: str
+</span></span><span style="display:flex;"><span>    goal: int
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Accounting context example event:</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@dataclass</span>(frozen<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">TransferSucceededEvent</span>(Event):
+</span></span><span style="display:flex;"><span>    idempotency_key: str
+</span></span><span style="display:flex;"><span>    from_account_id: str
+</span></span><span style="display:flex;"><span>    to_account_id: str
+</span></span><span style="display:flex;"><span>    amount: int
+</span></span><span style="display:flex;"><span>    metadata: dict
+</span></span></code></pre></div><p>The write model consists of the aggregates, repositories, units of work, and messages used to change the state of the system.
+Here, consistency and integrity are the main concerns. Performance, although always relevant, is not the primary focus.</p>
+<h4 id="example-write-model-command-handler">Example: Write model command handler</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">handle_register</span>(
+</span></span><span style="display:flex;"><span>    command: RegisterAccount,
+</span></span><span style="display:flex;"><span>) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">with</span> make_unit_of_work() <span style="color:#66d9ef">as</span> uow:
+</span></span><span style="display:flex;"><span>        account <span style="color:#f92672">=</span> Account(
+</span></span><span style="display:flex;"><span>            account_id<span style="color:#f92672">=</span>command<span style="color:#f92672">.</span>account_id,
+</span></span><span style="display:flex;"><span>            username<span style="color:#f92672">=</span>command<span style="color:#f92672">.</span>username<span style="color:#f92672">.</span>lower(),
+</span></span><span style="display:flex;"><span>            password<span style="color:#f92672">=</span>command<span style="color:#f92672">.</span>hashed_password,
+</span></span><span style="display:flex;"><span>        )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> account_repository(uow)<span style="color:#f92672">.</span>add(account)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        uow<span style="color:#f92672">.</span>emit(SignupEvent(account_id<span style="color:#f92672">=</span>account<span style="color:#f92672">.</span>account_id))
+</span></span></code></pre></div><h3 id="read-model">Read model</h3>
+<p>The read model consists of the queries and views used to retrieve data from the system.
+These operations do not affect the state of the system, and should be optimized for speed.</p>
+<p>This model can implement caches, projections, and other tricks to improve performance.
+It might not always be 1 on 1 with the write model, but it should not matter.</p>
+<h4 id="example-read-model-query-handler">Example: Read model query handler</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#a6e22e">@dataclass</span>(frozen<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">DashboardView</span>:
+</span></span><span style="display:flex;"><span>    account_id: str
+</span></span><span style="display:flex;"><span>    balance: int
+</span></span><span style="display:flex;"><span>    campaigns: list[CampaignView]
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">...</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">view_dashboard_query</span>(account_id: str) <span style="color:#f92672">-&gt;</span> DashboardView:
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">await</span> dashboard_view_factory()<span style="color:#f92672">.</span>create_dashboard_view(account_id<span style="color:#f92672">=</span>account_id)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">DashboardViewFactory</span>(ABC):
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">create_dashboard_view</span>(self, account_id: str) <span style="color:#f92672">-&gt;</span> DashboardView:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PostgresDashboardViewFactory</span>(DashboardViewFactory):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">create_dashboard_view</span>(self, account_id: str) <span style="color:#f92672">-&gt;</span> DashboardView :
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">with</span> postgres_pool<span style="color:#f92672">.</span>get_pool()<span style="color:#f92672">.</span>acquire() <span style="color:#66d9ef">as</span> conn:
+</span></span><span style="display:flex;"><span>            row <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> conn<span style="color:#f92672">.</span>fetchrow(<span style="color:#e6db74">&#34;SQL Query...&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">assert</span> row
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> DashboardView(<span style="color:#f92672">**</span>row)
+</span></span></code></pre></div><h2 id="distributed-systems">Distributed Systems</h2>
+<p>Even though this application is a monolith, we don&rsquo;t do direct communication between contexts.
+Instead, we use messages to communicate between them.</p>
+<p>This comes with some considerations:</p>
+<ul>
+<li>How can we ensure that messages are delivered reliably? 💀</li>
+<li>How can we ensure that messages are not lost? 💀</li>
+<li>How can we handle inter-context database transactions? 💀</li>
+</ul>
+<p>If only someone could come up with a solution for these problems&hellip; 🤔</p>
+<h3 id="transactional-outboxes-reliability-send-messages">Transactional Outboxes: reliability send messages</h3>
+<p>Transactional Outboxes ensure that messages are reliably sent even if the system crashes.
+They store messages in a database table and process them asynchronously.</p>
+<p>Consider this scenario:</p>
+<ol>
+<li>We start a database transaction</li>
+<li>We do changes to the domain write model</li>
+<li>We commit the database transaction</li>
+<li>We emit messages to a messaging engine (think of kafka or whatever)</li>
+</ol>
+<p>What happens if our application crashes after step 3?
+The transaction is saved, but the messages are lost.
+Important business processes might not be triggered, and the system might end up in an inconsistent state.</p>
+<p>Now the following:</p>
+<ol>
+<li>We start a database transaction</li>
+<li>We do changes to the domain write model</li>
+<li>We emit messages to a different messaging engine (think of kafka or whatever)</li>
+<li>We commit the database transaction</li>
+</ol>
+<p>What happens if our application crashes after step 3?
+The messages are sent, but the transaction was rolled back.
+This is also very bad, imagine that we send a &lsquo;payment processed event&rsquo;, but the db never saved it.</p>
+<p>A solution for this is to store the messages in a database table, in the same transaction as the domain changes.
+Then, after commit, a processor periodically polls this table and sends the messages to the messaging engine.
+After sending the messages, they can be deleted.</p>
+<ol>
+<li>We start a database transaction (i.e. postgres)</li>
+<li>We do changes to the domain write model</li>
+<li>We store the events in a postgres database table</li>
+<li>We commit the database transaction</li>
+<li>After transaction, we periodically poll the table and send the messages to the messaging engine</li>
+<li>After dispatch, we delete the messages</li>
+</ol>
+<p>Now, if our application crashes after step 3, there should be no issues!
+Either the transaction commits and the messages are sent, or the transaction rolls back and the messages are never sent.</p>
+<p>What happens if the processor crashes after step 5? Between sending the message and deleting it.
+As you can imagine, the messages will be sent twice. This is called &lsquo;at least once&rsquo; delivery and is what most messaging engines implement.
+This is why it is important to make sure that the message handlers are idempotent.</p>
+<h4 id="example-transactional-outbox-and-outbox-processor">Example: Transactional Outbox and Outbox processor</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># This class stores the messages in the database when the uow commits</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">TransactionalOutbox</span>(ABC):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, uow: UnitOfWork) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__uow <span style="color:#f92672">=</span> uow
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">store</span>(self, messages: list[Message]) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># This class is supposed to run separately, in a periodic task or even a different process. </span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># This will iterate over the messages</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">TransactionalOutboxProcessor</span>(ABC):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">process_messages</span>(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        messages <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>_fetch_messages()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>_dispatch_messages(messages)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>_destroy_messages(messages)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_fetch_messages</span>(self) <span style="color:#f92672">-&gt;</span> list[Message]:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_dispatch_messages</span>(self, messages: list[Message]) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_destroy_messages</span>(self, messages: list[Message]) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span></code></pre></div><h4 id="example-postgres-implementation-of-a-transactional-outbox">Example: Postgres implementation of a transactional outbox</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PostgresTransactionalOutbox</span>(TransactionalOutbox):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, uow: PostgresUnitOfWork) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__(uow)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>uow <span style="color:#f92672">=</span> uow
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">store</span>(self, messages: list[Message]) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> messages:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>uow<span style="color:#f92672">.</span>conn<span style="color:#f92672">.</span>executemany(<span style="color:#e6db74">&#34;sql query...&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PostgresTransactionalOutboxProcessor</span>(TransactionalOutboxProcessor):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_fetch_messages</span>(self) <span style="color:#f92672">-&gt;</span> list[Message]:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">with</span> postgres_pool<span style="color:#f92672">.</span>get_pool()<span style="color:#f92672">.</span>acquire() <span style="color:#66d9ef">as</span> conn:
+</span></span><span style="display:flex;"><span>            rows <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> conn<span style="color:#f92672">.</span>fetch(<span style="color:#e6db74">&#34;sql query...&#34;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> [self<span style="color:#f92672">.</span>__row_to_message(row) <span style="color:#66d9ef">for</span> row <span style="color:#f92672">in</span> rows]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_dispatch_messages</span>(self, messages: list[Message]) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        results <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> asyncio<span style="color:#f92672">.</span>gather(
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">*</span>[event_bus<span style="color:#f92672">.</span>handle(message) <span style="color:#66d9ef">for</span> message <span style="color:#f92672">in</span> messages],
+</span></span><span style="display:flex;"><span>            return_exceptions<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>,
+</span></span><span style="display:flex;"><span>        )
+</span></span><span style="display:flex;"><span>        exceptions <span style="color:#f92672">=</span> [result <span style="color:#66d9ef">for</span> result <span style="color:#f92672">in</span> results <span style="color:#66d9ef">if</span> isinstance(result, <span style="color:#a6e22e">Exception</span>)]
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> exceptions:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span> exc <span style="color:#f92672">in</span> exceptions:
+</span></span><span style="display:flex;"><span>                logger<span style="color:#f92672">.</span>error(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Error processing message: </span><span style="color:#e6db74">{</span>exc<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_destroy_messages</span>(self, messages: list[Message]) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">with</span> postgres_pool<span style="color:#f92672">.</span>get_pool()<span style="color:#f92672">.</span>acquire() <span style="color:#66d9ef">as</span> conn:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">await</span> conn<span style="color:#f92672">.</span>execute(<span style="color:#e6db74">&#34;sql query...&#34;</span>)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__row_to_message</span>(self, row: dict) <span style="color:#f92672">-&gt;</span> Message:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">...</span>
+</span></span></code></pre></div><h3 id="choreography-based-sagas-distributed-transactions-across-contexts">Choreography Based Sagas: distributed transactions across contexts</h3>
+<p>Here, we&rsquo;ll see how to handle distributed transactions across contexts using a choreography-based saga.</p>
+<p>Basically, instead of having one ACID transaction, we have multiple smaller transactions that are coordinated by messages.</p>
+<p>We&rsquo;ll use this example: <strong>A user requests a withdraw to a bitcoin wallet.</strong></p>
+<h4 id="example-bitcoin-withdraw-saga-happy-path">Example: Bitcoin withdraw saga, happy path</h4>
+<ul>
+<li>
+<p>First transaction, bitcoin context (saga starting point):</p>
+<ul>
+<li>User requests a withdrawal</li>
+<li>Bitcoin context creates an invoice with a pending status</li>
+<li>Bitcoin context emits a WithdrawRequestedEvent (The transactional outbox ensures this event is sent)</li>
+</ul>
+</li>
+<li>
+<p>Second transaction, accounting context:</p>
+<ul>
+<li>The system verifies the user&rsquo;s balance</li>
+<li>The system accepts the withdrawal</li>
+<li>The system updates the account&rsquo;s balance and stores the financial operation</li>
+<li>The system emits a WithdrawalAcceptedEvent (The transactional outbox ensures this event is sent)</li>
+</ul>
+</li>
+<li>
+<p>Third transaction, bitcoin context:</p>
+<ul>
+<li>The bitcoin processor pays for the invoice</li>
+<li>The bitcoin context updates the invoice status to paid</li>
+</ul>
+</li>
+</ul>
+<h4 id="example-bitcoin-withdraw-saga-insufficient-balance">Example: Bitcoin withdraw saga, insufficient balance</h4>
+<ul>
+<li>
+<p>First transaction, bitcoin context (saga starting point):</p>
+<ul>
+<li>User requests a withdrawal for X amount above their limit (this can happen if the view model is outdated)</li>
+<li>Bitcoin context creates an invoice with a pending status</li>
+<li>Bitcoin context emits a WithdrawRequestedEvent (The transactional outbox ensures this event is sent)</li>
+</ul>
+</li>
+<li>
+<p>Second transaction, accounting context:</p>
+<ul>
+<li>The system verifies the user&rsquo;s balance</li>
+<li>The system rejects the withdrawal</li>
+<li>The system emits a WithdrawalRejectedEvent (The transactional outbox ensures this event is sent)</li>
+</ul>
+</li>
+<li>
+<p>Third transaction, bitcoin context:</p>
+<ul>
+<li>The bitcoin invoice is rejected, or deleted</li>
+</ul>
+</li>
+</ul>
+<p>Idempotency is crucial in all steps, as the system might crash at any point and messages should be able to be
+processed multiple times.</p>
+<p>If the system crashes in any step, the saga should be retried until it completes successfully.</p>
+<p>You can see how, even thought there is not one big transaction, the system is still consistent.</p>
+<p>This concept is called <strong>Eventual Consistency</strong></p>
+<h3 id="from-monolith-to-microservices">From monolith to microservices</h3>
+<p>The nice thing about this architecture is that it is very easy to split into microservices, as the bounded contexts are independent.</p>
+<p>We can:</p>
+<ol>
+<li>Create one service, repository, ci/cd flow, etc&hellip; per bounded context.</li>
+<li>Move from a single database per project to a multiple database/schema per service pattern.</li>
+<li>Replace the in-process message bus with a real message broker (like Kafka or RabbitMQ)</li>
+<li>Deploy the applications separately.</li>
+</ol>
+<p>But of course, there are many more considerations when moving to a microservice architecture.</p>
+<p>I&rsquo;ll leave this migration as an exercise to the reader 😳.</p>
+
+      </article>
+      
+
+    </div>
+  </div>
+  <footer>
+    <div class="container mt-4 pb-1">
+    <p class="small">
+        
+        
+    </p>
+</div>
+  </footer>
+
+  </main>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>
