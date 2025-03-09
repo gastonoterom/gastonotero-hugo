@@ -1,3 +1,7 @@
+---
+title: "Resume"
+---
+
 ## Work Experience.
 
 - **BETTER PROS (Apr 2022 - Present):** Software Developer

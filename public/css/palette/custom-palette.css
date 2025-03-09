@@ -4,6 +4,22 @@
     --primary: #ff2340;
     --primary-variant: #ff405a;
     --secondary: #04a5e5;
+
+    h2 {
+        color: #FF5D73;
+    }
+    
+    h3 {
+        color: #ff4d6d;
+    }
+
+    h4 {
+        color: #ff758f;
+    }
+
+    strong {
+        color: #c9184a;
+    }
 }
 
 .dark {
@@ -13,3 +29,4 @@
     --primary-variant: #ff475f;
     --secondary: #f7f5dd;
 }
+

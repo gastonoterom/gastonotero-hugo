@@ -38,5 +38,5 @@ theme = 'not-much'
 # Styles
 [params]
     theme = "dark"
-    palette = "default"
+    palette = "custom-palette"
     copyright = "© {year}"

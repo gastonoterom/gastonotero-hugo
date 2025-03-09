@@ -12,19 +12,18 @@ This is the Github repository for the full project: [Satoshi Spark Source Code](
 
 ## Table of Contents
 
-- Introduction
-- Domain-Driven Design (DDD)
-  - Aggregates: the building block of our domain
-  - Abstract Repositories: avoid the ORM jail
-  - Unit of Work: How to handle database transactions in the domain model
-- Command Query Responsibility Segregation (CQRS)
-  - Write model
-  - Read model
-- Distributed Systems
-  - Transactional Outboxes: handle message reliability
-  - Choreography Based Sagas: distributed transactions across contexts
-  - From monolith to microservices
-
+- [Introduction](#introduction)
+- [Domain-Driven Design (DDD)](#domain-driven-design-ddd)
+  - [Aggregates: the building block of our domain](#aggregates-the-building-block-of-our-domain)
+  - [Abstract Repositories: avoid the ORM jail](#abstract-repositories-avoid-the-orm-jail)
+  - [Unit of Work: How to handle database transactions in the domain model](#unit-of-work-how-to-handle-database-transactions-in-the-domain-model)
+- [Command Query Responsibility Segregation (CQRS)](#command-query-responsibility-segregation-cqrs)
+  - [Write model](#write-model)
+  - [Read model](#read-model)
+- [Distributed Systems](#distributed-systems)
+  - [Transactional Outboxes: handle message reliability](#transactional-outboxes-handle-message-reliability)
+  - [Choreography Based Sagas: distributed transactions across contexts](#choreography-based-sagas-distributed-transactions-across-contexts)
+  - [From monolith to microservices](#from-monolith-to-microservices)
 
 ## Introduction
 
