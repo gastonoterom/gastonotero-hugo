@@ -1,10 +1,12 @@
 ---
-id: gastonotero
-title: GastonOtero.com
+id: gastonotero-next
+title: Next.js Markdown Blog
 description: React Next landing page, with a blog, resume and projects section.
 author: Gaston Otero
 date: "2021-12-27"
 ---
+
+_Note: this project has been deprecated in favor for the Hugo framework, you can find more about it here: [GastonOtero.com - Hugo](/projects/gastonotero-hugo)_
 
 ## Statically Generated Blog & More
 

@@ -23,11 +23,18 @@
       <description>&lt;h2 id=&#34;crowdfunding-via-bitcoin-lightning&#34;&gt;Crowdfunding, via bitcoin lightning&lt;/h2&gt;&#xA;&lt;p&gt;Satoshi Spark is a Bitcoin crowdfunding application that lets users create and donate to campaigns using the Lightning Network. While functional, the project&amp;rsquo;s main purpose is to demonstrate software architecture principles - specifically Domain-Driven Design (DDD), Command Query Responsibility Segregation (CQRS), and distributed systems concepts.&lt;/p&gt;&#xA;&lt;p&gt;The application is structured into several separate domains (bounded contexts) like authentication, accounting, crowdfunding, and Bitcoin operations. Each domain handles its specific responsibilities and communicates with others through messages rather than direct calls. This separation makes the code clearer and easier to maintain.&lt;/p&gt;</description>
     </item>
     <item>
-      <title>GastonOtero.com</title>
-      <link>http://localhost:1313/projects/gastonotero/</link>
+      <title>GastonOtero.com - Portfolio Site</title>
+      <link>http://localhost:1313/projects/gastonotero-hugo/</link>
+      <pubDate>Tue, 05 Mar 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/projects/gastonotero-hugo/</guid>
+      <description>&lt;h2 id=&#34;my-portfolio-website&#34;&gt;My Portfolio Website&lt;/h2&gt;&#xA;&lt;p&gt;The page you are seeing right now was created with Hugo.&#xA;It has a blog, a projects section, and an about me page.&lt;/p&gt;&#xA;&lt;p&gt;The source code of this project is fully open,&#xA;you can check it out at &lt;a href=&#34;https://github.com/gastonoterom/gastonotero-hugo&#34;&gt;this repo&lt;/a&gt;.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Next.js Markdown Blog</title>
+      <link>http://localhost:1313/projects/gastonotero-next/</link>
       <pubDate>Mon, 27 Dec 2021 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/projects/gastonotero/</guid>
-      <description>&lt;h2 id=&#34;statically-generated-blog--more&#34;&gt;Statically Generated Blog &amp;amp; More&lt;/h2&gt;&#xA;&lt;p&gt;The page you are seeing right now was created with the Next framework using markdown parsing to create new entries.&#xA;It has a blog, a projects section, and an about me page.&lt;/p&gt;&#xA;&lt;p&gt;The source code of this project is fully open,&#xA;you can check it out at &lt;a href=&#34;https://github.com/gastonoterom/gastonotero-next&#34;&gt;this repo&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;p&gt;This site uses markdown (.md) files for the content of each page, so adding, editing and deleting them is much simper&#xA;than using JSX or HTML. It uses &lt;a href=&#34;https://github.com/jonschlinkert/gray-matter&#34;&gt;gray matter&lt;/a&gt; to parse the markdown, but it also has&#xA;optimizations to turn regular images into &lt;a href=&#34;https://nextjs.org/docs/api-reference/next/image&#34;&gt;next-js&lt;/a&gt; ones for faster image serving.&lt;/p&gt;</description>
+      <guid>http://localhost:1313/projects/gastonotero-next/</guid>
+      <description>&lt;p&gt;&lt;em&gt;Note: this project has been deprecated in favor for the Hugo framework, you can find more about it here: &lt;a href=&#34;http://localhost:1313/projects/gastonotero-hugo&#34;&gt;GastonOtero.com - Hugo&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;statically-generated-blog--more&#34;&gt;Statically Generated Blog &amp;amp; More&lt;/h2&gt;&#xA;&lt;p&gt;The page you are seeing right now was created with the Next framework using markdown parsing to create new entries.&#xA;It has a blog, a projects section, and an about me page.&lt;/p&gt;&#xA;&lt;p&gt;The source code of this project is fully open,&#xA;you can check it out at &lt;a href=&#34;https://github.com/gastonoterom/gastonotero-next&#34;&gt;this repo&lt;/a&gt;.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Creating a vpn only lan in OpenWRT</title>
