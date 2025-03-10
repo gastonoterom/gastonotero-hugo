@@ -2,7 +2,7 @@
 title: "Resume"
 ---
 
-## Work Experience.
+## Work Experience
 
 - **BETTER PROS (Apr 2022 - Present):** Software Developer
 
@@ -35,11 +35,11 @@ Network design and implementation using Mikrotik and Unify products.
 
 Maintainer of cloud and physical server infrastructure using Linux and Windows Server.
 
-## Education.
+## Education
 
 - **Universidad Tecnológica Nacional (2018-2024):** Information Systems engineer: Thesis & all exams approved, awaiting my degree.
 
-## Languages.
+## Languages
 
 - **Spanish:** Native
 - **English**: Bilingual
