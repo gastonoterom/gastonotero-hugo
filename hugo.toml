@@ -1,4 +1,4 @@
-baseURL = 'https://gastonotero.com/'
+baseUrl = "https://gastonotero.com/"
 languageCode = 'en-us'
 title = 'Gaston Otero'
 
