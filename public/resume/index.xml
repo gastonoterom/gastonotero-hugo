@@ -2,10 +2,10 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Resume on Gaston Otero</title>
-    <link>http://localhost:1313/resume/</link>
+    <link>https://gastonotero.com/resume/</link>
     <description>Recent content in Resume on Gaston Otero</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <atom:link href="http://localhost:1313/resume/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://gastonotero.com/resume/index.xml" rel="self" type="application/rss+xml" />
   </channel>
 </rss>

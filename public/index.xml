@@ -2,52 +2,52 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Gaston Otero</title>
-    <link>http://localhost:1313/</link>
+    <link>https://gastonotero.com/</link>
     <description>Recent content on Gaston Otero</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Sat, 08 Mar 2025 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://gastonotero.com/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>DDD, CQRS and Distributed Systems in Python</title>
-      <link>http://localhost:1313/blog/ddd-cqrs-distributed-systems/</link>
+      <link>https://gastonotero.com/blog/ddd-cqrs-distributed-systems/</link>
       <pubDate>Sat, 08 Mar 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/ddd-cqrs-distributed-systems/</guid>
+      <guid>https://gastonotero.com/blog/ddd-cqrs-distributed-systems/</guid>
       <description>&lt;p&gt;&lt;em&gt;This article will be based on a sample application called Satoshi Spark 🚀 🔥&lt;/em&gt;&lt;/p&gt;&#xA;&lt;p&gt;This is the Github repository for the full project: &lt;a href=&#34;https://github.com/gastonoterom/Satoshi-Spark&#34;&gt;Satoshi Spark Source Code&lt;/a&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;table-of-contents&#34;&gt;Table of Contents&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#introduction&#34;&gt;Introduction&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#domain-driven-design-ddd&#34;&gt;Domain-Driven Design (DDD)&lt;/a&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#aggregates-the-building-block-of-our-domain&#34;&gt;Aggregates: the building block of our domain&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#abstract-repositories-avoid-the-orm-jail&#34;&gt;Abstract Repositories: avoid the ORM jail&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#unit-of-work-how-to-handle-database-transactions-in-the-domain-model&#34;&gt;Unit of Work: How to handle database transactions in the domain model&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#command-query-responsibility-segregation-cqrs&#34;&gt;Command Query Responsibility Segregation (CQRS)&lt;/a&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#write-model&#34;&gt;Write model&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#read-model&#34;&gt;Read model&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#distributed-systems&#34;&gt;Distributed Systems&lt;/a&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#transactional-outboxes-handle-message-reliability&#34;&gt;Transactional Outboxes: handle message reliability&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#choreography-based-sagas-distributed-transactions-across-contexts&#34;&gt;Choreography Based Sagas: distributed transactions across contexts&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#from-monolith-to-microservices&#34;&gt;From monolith to microservices&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;&#xA;&lt;p&gt;Satoshi Spark is designed to facilitate crowdfunding campaigns via the Bitcoin Lightning Network.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Satoshi Spark 🚀 🔥</title>
-      <link>http://localhost:1313/projects/satoshi-spark/</link>
+      <link>https://gastonotero.com/projects/satoshi-spark/</link>
       <pubDate>Sat, 08 Mar 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/projects/satoshi-spark/</guid>
+      <guid>https://gastonotero.com/projects/satoshi-spark/</guid>
       <description>&lt;h2 id=&#34;crowdfunding-via-bitcoin-lightning&#34;&gt;Crowdfunding, via bitcoin lightning&lt;/h2&gt;&#xA;&lt;p&gt;Satoshi Spark is a Bitcoin crowdfunding application that lets users create and donate to campaigns using the Lightning Network. While functional, the project&amp;rsquo;s main purpose is to demonstrate software architecture principles - specifically Domain-Driven Design (DDD), Command Query Responsibility Segregation (CQRS), and distributed systems concepts.&lt;/p&gt;&#xA;&lt;p&gt;The application is structured into several separate domains (bounded contexts) like authentication, accounting, crowdfunding, and Bitcoin operations. Each domain handles its specific responsibilities and communicates with others through messages rather than direct calls. This separation makes the code clearer and easier to maintain.&lt;/p&gt;</description>
     </item>
     <item>
       <title>GastonOtero.com - Portfolio Site</title>
-      <link>http://localhost:1313/projects/gastonotero-hugo/</link>
+      <link>https://gastonotero.com/projects/gastonotero-hugo/</link>
       <pubDate>Tue, 05 Mar 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/projects/gastonotero-hugo/</guid>
+      <guid>https://gastonotero.com/projects/gastonotero-hugo/</guid>
       <description>&lt;h2 id=&#34;my-portfolio-website&#34;&gt;My Portfolio Website&lt;/h2&gt;&#xA;&lt;p&gt;The page you are seeing right now was created with Hugo.&#xA;It has a blog, a projects section, my resume, and an about me page.&lt;/p&gt;&#xA;&lt;p&gt;The source code of this project is fully open,&#xA;you can check it out at &lt;a href=&#34;https://github.com/gastonoterom/gastonotero-hugo&#34;&gt;this repo&lt;/a&gt;.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Next.js Markdown Blog</title>
-      <link>http://localhost:1313/projects/gastonotero-next/</link>
+      <link>https://gastonotero.com/projects/gastonotero-next/</link>
       <pubDate>Mon, 27 Dec 2021 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/projects/gastonotero-next/</guid>
-      <description>&lt;p&gt;&lt;em&gt;Note: this project has been deprecated in favor for the Hugo framework, you can find more about it here: &lt;a href=&#34;http://localhost:1313/projects/gastonotero-hugo&#34;&gt;GastonOtero.com - Hugo&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;statically-generated-blog--more&#34;&gt;Statically Generated Blog &amp;amp; More&lt;/h2&gt;&#xA;&lt;p&gt;The page you are seeing right now was created with the Next framework using markdown parsing to create new entries.&#xA;It has a blog, a projects section, and an about me page.&lt;/p&gt;&#xA;&lt;p&gt;The source code of this project is fully open,&#xA;you can check it out at &lt;a href=&#34;https://github.com/gastonoterom/gastonotero-next&#34;&gt;this repo&lt;/a&gt;.&lt;/p&gt;</description>
+      <guid>https://gastonotero.com/projects/gastonotero-next/</guid>
+      <description>&lt;p&gt;&lt;em&gt;Note: this project has been deprecated in favor for the Hugo framework, you can find more about it here: &lt;a href=&#34;https://gastonotero.com/projects/gastonotero-hugo&#34;&gt;GastonOtero.com - Hugo&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;statically-generated-blog--more&#34;&gt;Statically Generated Blog &amp;amp; More&lt;/h2&gt;&#xA;&lt;p&gt;The page you are seeing right now was created with the Next framework using markdown parsing to create new entries.&#xA;It has a blog, a projects section, and an about me page.&lt;/p&gt;&#xA;&lt;p&gt;The source code of this project is fully open,&#xA;you can check it out at &lt;a href=&#34;https://github.com/gastonoterom/gastonotero-next&#34;&gt;this repo&lt;/a&gt;.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Creating a VPN Only Lan in OpenWRT</title>
-      <link>http://localhost:1313/blog/creating-a-vpn-only-lan-in-openwrt/</link>
+      <link>https://gastonotero.com/blog/creating-a-vpn-only-lan-in-openwrt/</link>
       <pubDate>Mon, 27 Sep 2021 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/creating-a-vpn-only-lan-in-openwrt/</guid>
+      <guid>https://gastonotero.com/blog/creating-a-vpn-only-lan-in-openwrt/</guid>
       <description>&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;&#xA;&lt;p&gt;This tutorial will cover how to configure an OpenWRT router to have 2 separate networks,&#xA;one that uses your ISP gateway (for example, &amp;ldquo;MyWIFI&amp;rdquo;),&#xA;and another one that has its traffic routed through a wireguard VPN (like, &amp;ldquo;MyWIFI_VPN&amp;rdquo;).&lt;/p&gt;&#xA;&lt;p&gt;I&amp;rsquo;ll be using &lt;a href=&#34;https://mullvad.net/en/&#34;&gt;Mullvad VPN&lt;/a&gt; for this example,&#xA;they&amp;rsquo;re not sponsoring me in any way or kind,&#xA;you can use any wireguard VPN provider or your own WG server.&lt;/p&gt;&#xA;&lt;h2 id=&#34;use-cases&#34;&gt;Use Cases&lt;/h2&gt;&#xA;&lt;p&gt;Mullvad has a nice &lt;a href=&#34;https://mullvad.net/en/help/running-wireguard-router/&#34;&gt;tutorial&lt;/a&gt;&#xA;on how to route all your traffic through a VPN on a wireless router,&#xA;still, that guide teaches you how to route ALL of your LAN traffic through it.&#xA;This may be undesirable because, for example, some streaming services&#xA;blacklist VPN provider&amp;rsquo;s IP addresses, making your family members unable&#xA;to enjoy their favourite TV shows in Netf***.&lt;/p&gt;</description>
     </item>
     <item>
       <title>DolarBlue Rest API</title>
-      <link>http://localhost:1313/projects/dolarblue-api/</link>
+      <link>https://gastonotero.com/projects/dolarblue-api/</link>
       <pubDate>Sun, 27 Jun 2021 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/projects/dolarblue-api/</guid>
+      <guid>https://gastonotero.com/projects/dolarblue-api/</guid>
       <description>&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;&#xA;&lt;p&gt;Dolar Blue Rest API is a backend service for fetching the price of the &amp;ldquo;Dolar Blue&amp;rdquo; in Argentina from the most popular sources.&lt;/p&gt;&#xA;&lt;p&gt;The &amp;ldquo;Dolar Blue&amp;rdquo; refers to how we call the unregulated US dollar in the parallel markets.&lt;/p&gt;&#xA;&lt;p&gt;The Argentinian currency system is not a free market like other countries, here the argentinian peso can only be exchanged&#xA;in the Central Bank with many limitations, the average argentinian is unable to do it.&lt;/p&gt;</description>
     </item>
   </channel>
