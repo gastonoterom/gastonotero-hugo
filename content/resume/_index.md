@@ -39,7 +39,7 @@ Maintainer of cloud and physical server infrastructure using Linux and Windows S
 
 - **Universidad Tecnológica Nacional (2018-2024):** Information Systems engineer: Thesis & all exams approved, awaiting my degree.
 
-## Languages
+## Languages.
 
 - **Spanish:** Native
 - **English**: Bilingual
