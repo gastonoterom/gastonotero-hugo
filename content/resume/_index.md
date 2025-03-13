@@ -45,14 +45,13 @@ Now acquired by SEIDOR. This internship was part of an educational program from 
 
 ## Education
 
-- **Universidad Tecnológica Nacional (2018-2024):** Information Systems engineer 
+* **Universidad Tecnológica Nacional (2018-2024):** Information Systems engineer 
 
-* All exams are already approved
-* Thesis finished & approved with a 10 out of 10 grade
-* Awaiting my degree
-
-Honors:
-* Thesis received award as the most influential by the community
+  * All exams are already approved
+  * Thesis finished & approved with a 10 out of 10 grade
+  * Awaiting my degree
+  * Honors:
+    * Thesis received award as the most influential by the community
 
 
 ## Languages
