@@ -35,9 +35,25 @@ Network design and implementation using Mikrotik and Unify products.
 
 Maintainer of cloud and physical server infrastructure using Linux and Windows Server.
 
+- **Argentis Consulting, SAP Official Partner (July 2018 - October 2018):** Intern
+
+Now acquired by SEIDOR. This internship was part of an educational program from my academic institution
+
+* Assisted software engineers with daily tasks to support backend development.
+* Gained foundational knowledge in SQL and backend systems
+* Learned about SAP systems and the partnership program they have with different companies
+
 ## Education
 
-- **Universidad Tecnológica Nacional (2018-2024):** Information Systems engineer: Thesis & all exams approved, awaiting my degree.
+- **Universidad Tecnológica Nacional (2018-2024):** Information Systems engineer 
+
+* All exams are already approved
+* Thesis finished & approved with a 10 out of 10 grade
+* Awaiting my degree
+
+Honors:
+* Thesis received award as the most influential by the community
+
 
 ## Languages
 
