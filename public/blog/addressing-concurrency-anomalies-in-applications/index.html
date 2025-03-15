@@ -83,7 +83,7 @@
         </div>
       </header>
       <article>
-        <p><em>Or, how exploit an infinite money glitch if your bank uses standard Postgres transactions without locks 👮‍♀️🚔💰.</em></p>
+        <p><em>Or, how exploit an infinite money glitch if your bank uses standard Postgres transactions without locks</em></p>
 <h2 id="table-of-contents">Table of Contents</h2>
 <ul>
 <li><a href="#introduction">Introduction</a></li>
@@ -168,6 +168,7 @@ TX 2: Performing withdrawal on account test_account_id, for $100000
 TX 1: Success! $100000 was withdrawn from test_account_id. The account&#39;s new balance is: $0.00
 TX 2: Success! $100000 was withdrawn from test_account_id. The account&#39;s new balance is: $0.00
 </code></pre><p>As you can see, by default, postgres&rsquo; transactions don&rsquo;t have strong concurrency guarantees.</p>
+<p>We fetched both rows before the other concurrent transaction modified it! We bypassed the business logic domain rules!</p>
 <blockquote>
 <p>Damn, how can we solve this?</p></blockquote>
 <p>We&rsquo;ll take a look into two common mechanisms to address this issue.</p>
