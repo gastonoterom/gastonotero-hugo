@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+<head>
+  
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="shortcut icon" type="image/png" href="https://gastonotero.com/favicon.ico" />
+<meta property="og:url" content="https://gastonotero.com/blog/addressing-concurrency-anomalies-in-applications/">
+  <meta property="og:site_name" content="Gaston Otero">
+  <meta property="og:title" content="Addressing Concurrency Anomalies in Applications">
+  <meta property="og:description" content="Finding and fixing common database concurrency anomalies">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-03-14T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-03-14T00:00:00+00:00">
+
+<title>Gaston Otero | Addressing Concurrency Anomalies in Applications</title>
+
+      <link rel="stylesheet" href="/css/main.min.4524882f5d1196622ca104ab1aad53fdc14a51b37d18dd767cbe40cde6310feb.css" integrity="sha256-RSSIL10RlmIsoQSrGq1T/cFKUbN9GN12fL5AzeYxD&#43;s=" crossorigin="anonymous">
+  
+        <link rel="stylesheet" href="/css/palette/custom-palette.min.4c97922053431a6b600af5acbe8febd83e147b5de1d0b9d429b97d1a67adc6c7.css" integrity="sha256-TJeSIFNDGmtgCvWsvo/r2D4Ue13h0LnUKbl9Gmetxsc=" crossorigin="anonymous">
+
+      <script src="/js/main.86bb3d8e6f46df0fc97c2731e6b99175a13b87a4086acf578ff9b6992fcf32c1.js" integrity="sha256-hrs9jm9G3w/JfCcx5rmRdaE7h6QIas9Xj/m2mS/PMsE=" crossorigin="anonymous"></script>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+</head>
+
+  
+<body
+    class="dark text-light"
+>
+  
+  <main>
+    
+  <div class="container pt-5">
+    <div class="row mt-5 pt-5">
+      
+  <nav aria-label="breadcrumb" class="small">
+    <ol class="breadcrumb fw-bold">
+    <li class="breadcrumb-item">
+      <a href="/"
+        
+      >about</a>
+      
+    </li>
+    <li class="breadcrumb-item">
+      <a href="/resume"
+        
+      >resume</a>
+      
+    </li>
+    <li class="breadcrumb-item">
+      <a href="/blog"
+        class="text-decoration-underline link-offset-3"
+        
+      >blog</a>
+      
+    </li>
+    <li class="breadcrumb-item">
+      <a href="/projects"
+        
+      >projects</a>
+      
+    </li>
+    </ol>
+  </nav>
+
+    </div>
+    <div class="post">
+      <header class="mb-5">
+        <h1 class="text-uppercase">Addressing Concurrency Anomalies in Applications</h1>
+        
+        
+        <div aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item small">
+              <time datetime="2025-03-14T00:00:00&#43;00:00">March 14, 2025</time>
+            </li>
+          </ol>
+        </div>
+      </header>
+      <article>
+        <p><em>Or, how exploit an infinite money glitch if your bank uses standard Postgres transactions without locks 👮‍♀️🚔💰.</em></p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#select-process-and-update-anti-pattern">Select, Process, and Update Anti-Pattern</a></li>
+<li><a href="#pessimistic-solution-lock-the-row">Pessimistic Solution: Lock the Row</a></li>
+<li><a href="#optimistic-solution-version-control">Optimistic Solution: Version Control</a></li>
+<li><a href="#decoupling-your-domain-from-any-particular-implementation">Decoupling Your Domain From Any Particular Implementation</a>
+<ul>
+<li><a href="#domain-driven-design-postgres-implementation">Domain Driven Design: Postgres Implementation</a></li>
+<li><a href="#domain-driven-design-mongodb-implementation">Domain Driven Design: MongoDB Implementation</a></li>
+</ul>
+</li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+<h2 id="introduction">Introduction</h2>
+<p>We&rsquo;ll take a look into a very common anti-pattern found in many applications today (you&rsquo;ll be surprised, maybe you&rsquo;ll find this in your own codebase).</p>
+<p>For this article, we&rsquo;ll use as an example a banking application, and how two married people (Gastón &amp; Marina) can exploit concurrency anomalies for their own interests.</p>
+<h2 id="select-process-and-update-anti-pattern">Select, Process, and Update Anti-Pattern</h2>
+<p>Analyze the following situation:</p>
+<p><img src="/images/addressing-concurrency-anomalies-in-applications/1-read-committed.png" alt="read-commited.png"></p>
+<blockquote>
+<p>This sounds ridiculous! What kind of database engine would allow this by default?</p></blockquote>
+<p>By default, Postgres.</p>
+<blockquote>
+<p>Wait! Does this happen even when using transactions?</p></blockquote>
+<p>Yes, the default Postgres isolation level for transactions is <a href="https://www.postgresql.org/docs/current/transaction-iso.html">&lsquo;Read Committed&rsquo;</a>.</p>
+<p>This isolation level allows for Non-repeatable reads. Basically, there&rsquo;s no guarantee that the values you read in the middle of a transaction won&rsquo;t be changed by another committed transaction.</p>
+<h4 id="example-python--postgres-concurrency-anomalies">Example: Python &amp; Postgres Concurrency Anomalies</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#a6e22e">@dataclass</span>(frozen<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BankAccount</span>:
+</span></span><span style="display:flex;"><span>    account_id: str
+</span></span><span style="display:flex;"><span>    balance: float
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">withdraw</span>(
+</span></span><span style="display:flex;"><span>    account_id: str,
+</span></span><span style="display:flex;"><span>    amount: int,
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># We&#39;ll artificially await mid-transaction, which should eventually happen according to Murphy&#39;s law</span>
+</span></span><span style="display:flex;"><span>    _delay_seconds: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>    conn: asyncpg<span style="color:#f92672">.</span>Connection
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Open a Postgres connection</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">with</span> postgres_pool<span style="color:#f92672">.</span>get_pool()<span style="color:#f92672">.</span>acquire() <span style="color:#66d9ef">as</span> conn:
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Performing withdrawal on account </span><span style="color:#e6db74">{</span>account_id<span style="color:#e6db74">}</span><span style="color:#e6db74">, for $</span><span style="color:#e6db74">{</span>amount<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Begin a default postgres database transaction</span>
+</span></span><span style="display:flex;"><span>        transaction <span style="color:#f92672">=</span> conn<span style="color:#f92672">.</span>transaction()
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> transaction<span style="color:#f92672">.</span>start()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Select the bank account</span>
+</span></span><span style="display:flex;"><span>        row <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> conn<span style="color:#f92672">.</span>fetchrow(
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;SELECT * FROM bank_account WHERE account_id = $1&#34;</span>, account_id
+</span></span><span style="display:flex;"><span>        )
+</span></span><span style="display:flex;"><span>        account <span style="color:#f92672">=</span> BankAccount(<span style="color:#f92672">*</span>row)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Assert business logic (Can&#39;t withdraw over the available funds)</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">assert</span> account<span style="color:#f92672">.</span>balance <span style="color:#f92672">-</span> amount <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Insufficient balance for withdrawal!&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># I/O eventual delay</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> asyncio<span style="color:#f92672">.</span>sleep(_delay_seconds)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Update the account to the new balance</span>
+</span></span><span style="display:flex;"><span>        new_balance <span style="color:#f92672">=</span> account<span style="color:#f92672">.</span>balance <span style="color:#f92672">-</span> amount
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> conn<span style="color:#f92672">.</span>execute(<span style="color:#e6db74">&#34;UPDATE bank_account SET balance = $1&#34;</span>, new_balance)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Commit the transaction</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> transaction<span style="color:#f92672">.</span>commit()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Dispatch successful transaction message (send money to the user)</span>
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;&#34;&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        Success! $</span><span style="color:#e6db74">{</span>amount<span style="color:#e6db74">}</span><span style="color:#e6db74"> was withdrawn from </span><span style="color:#e6db74">{</span>account_id<span style="color:#e6db74">}</span><span style="color:#e6db74">. 
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        The account&#39;s new balance is: $</span><span style="color:#e6db74">{</span>new_balance<span style="color:#e6db74">}</span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;&#34;&#34;</span>)
+</span></span></code></pre></div><p>Now, let&rsquo;s concurrently execute this piece of code code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">await</span> asyncio<span style="color:#f92672">.</span>gather(
+</span></span><span style="display:flex;"><span>    withdraw(TEST_ACCOUNT_ID, <span style="color:#ae81ff">100_000</span>, _delay_seconds<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>),
+</span></span><span style="display:flex;"><span>    withdraw(TEST_ACCOUNT_ID, <span style="color:#ae81ff">100_000</span>, _delay_seconds<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>),
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><p>This will be the console&rsquo;s output:</p>
+<pre tabindex="0"><code>TX 1: Performing withdrawal on account test_account_id, for $100000
+TX 2: Performing withdrawal on account test_account_id, for $100000
+
+TX 1: Success! $100000 was withdrawn from test_account_id. The account&#39;s new balance is: $0.00
+TX 2: Success! $100000 was withdrawn from test_account_id. The account&#39;s new balance is: $0.00
+</code></pre><p>As you can see, by default, postgres&rsquo; transactions don&rsquo;t have strong concurrency guarantees.</p>
+<blockquote>
+<p>Damn, how can we solve this?</p></blockquote>
+<p>We&rsquo;ll take a look into two common mechanisms to address this issue.</p>
+<h2 id="pessimistic-solution-lock-the-row">Pessimistic Solution: Lock the Row</h2>
+<p>Think about this for a second, if you had to write policies at the bank to prevent these kind of issues, what could you do?</p>
+<blockquote>
+<p>Hmm, we could probably impose a rule where only one worker at a time could read and update the ledger.</p></blockquote>
+<p>This sounds very reasonable, let&rsquo;s take a look on how this would look like in the real world:</p>
+<p><img src="/images/addressing-concurrency-anomalies-in-applications/2-pessimistic-concurrency.png" alt="pessimistic-concurrency.png"></p>
+<p>Let&rsquo;s now see how we can code this solution:</p>
+<h4 id="example-pessimistic-concurrency-control-in-python--postgres">Example: Pessimistic Concurrency Control in Python &amp; Postgres</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">withdraw</span>(
+</span></span><span style="display:flex;"><span>    account_id: str,
+</span></span><span style="display:flex;"><span>    amount: int,
+</span></span><span style="display:flex;"><span>    _delay_seconds: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>    conn: asyncpg<span style="color:#f92672">.</span>Connection
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">with</span> postgres_pool<span style="color:#f92672">.</span>get_pool()<span style="color:#f92672">.</span>acquire() <span style="color:#66d9ef">as</span> conn:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">...</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Select the bank account</span>
+</span></span><span style="display:flex;"><span>        row <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> conn<span style="color:#f92672">.</span>fetchrow(
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;SELECT * FROM bank_account WHERE account_id = $1 FOR UPDATE&#34;</span>, account_id
+</span></span><span style="display:flex;"><span>        )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">...</span>
+</span></span></code></pre></div><p>The only change here is this piece of code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>row <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> conn<span style="color:#f92672">.</span>fetchrow(
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;SELECT * FROM bank_account WHERE account_id = $1&#34;</span>, account_id
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><p>Was changed into:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>row <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> conn<span style="color:#f92672">.</span>fetchrow(
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;SELECT * FROM bank_account WHERE account_id = $1 FOR UPDATE&#34;</span>, account_id
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><p>There are of course many considerations with database locks, I&rsquo;d suggest you read the Postgres&rsquo; official documentation for <a href="https://www.postgresql.org/docs/current/explicit-locking.html">Explicit Locks</a>. Here is a brief summary:</p>
+<blockquote>
+<p>For Update:</p>
+<p>[&hellip;] FOR UPDATE causes the rows retrieved by the SELECT statement to be locked as though for update.</p>
+<p>[&hellip;] That is, other transactions that attempt [&hellip;.] SELECT FOR UPDATE [&hellip;] on these rows will be blocked until the current transaction ends;</p>
+<p>conversely, SELECT FOR UPDATE will wait for a concurrent transaction that has run any of those commands on the same row, and will then lock and return the updated row [&hellip;]</p></blockquote>
+<p>Do you figure why these kinds of concurrency control are called pessimistic?</p>
+<p>Because they lock the row <em>first</em>, this is can also be called &lsquo;first read wins&rsquo;.</p>
+<p>Be careful with this, you can end up in a <a href="https://www.postgresql.org/docs/current/explicit-locking.html#LOCKING-DEADLOCKS">dead-lock</a>.</p>
+<h2 id="optimistic-solution-version-control">Optimistic Solution: Version Control</h2>
+<p>Let&rsquo;s think of another concurrency mechanism.</p>
+<p>What if instead of locking the whole ledger, the employees find another way to keep track of concurrent updates?</p>
+<p>What if the employees themselves make sure that the account&rsquo;s value is at the time of first read and at the time of update?</p>
+<p>We can call this &lsquo;Version Control&rsquo;. If the version of the object we update is different than the one first seen, there is something fishy going on.</p>
+<p>This is how it would look like conceptually:</p>
+<p><img src="/images/addressing-concurrency-anomalies-in-applications/3-optimistic-concurrency.png" alt="optimistic-concurrency.png"></p>
+<p><em>I&rsquo;ll wait for you in the Bahamas honey.</em></p>
+<p>We can implement this in two ways.</p>
+<ul>
+<li>
+<p>First alternative: Use Postgres <a href="https://www.postgresql.org/docs/current/transaction-iso.html#XACT-REPEATABLE-READ">Repeatable Read</a> isolation level for transactions</p>
+<ul>
+<li>This isolation level guarantees that the data you update is the same as the one you once read, if another transaction committed data in-between, postgres will raise a serialization error when you try to commit.</li>
+</ul>
+</li>
+<li>
+<p>Second alternative: Update using version column</p>
+<ul>
+<li>We&rsquo;ll look at this later on this article with a <a href="#domain-driven-design-mongodb-implementation">MongoDB and DDD (Domain Driven Design) implementation</a></li>
+</ul>
+</li>
+</ul>
+<h4 id="example-optimistic-concurrency-control-in-python--postgres">Example: Optimistic Concurrency Control in Python &amp; Postgres</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">withdraw</span>(
+</span></span><span style="display:flex;"><span>    account_id: str,
+</span></span><span style="display:flex;"><span>    amount: int,
+</span></span><span style="display:flex;"><span>    _delay_seconds: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>    conn: asyncpg<span style="color:#f92672">.</span>Connection
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">with</span> postgres_pool<span style="color:#f92672">.</span>get_pool()<span style="color:#f92672">.</span>acquire() <span style="color:#66d9ef">as</span> conn:
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Performing withdrawal on account </span><span style="color:#e6db74">{</span>account_id<span style="color:#e6db74">}</span><span style="color:#e6db74">, for $</span><span style="color:#e6db74">{</span>amount<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Use the repeatable_read isolation level</span>
+</span></span><span style="display:flex;"><span>        transaction <span style="color:#f92672">=</span> conn<span style="color:#f92672">.</span>transaction(isolation<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;repeatable_read&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> transaction<span style="color:#f92672">.</span>start()
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">...</span>
+</span></span></code></pre></div><p>Here, you only have to make sure your transaction&rsquo;s isolation level is &lsquo;repeatable_read&rsquo;:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>transaction <span style="color:#f92672">=</span> conn<span style="color:#f92672">.</span>transaction(isolation<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;repeatable_read&#34;</span>)
+</span></span></code></pre></div><p>This will be the output of running the transactions concurrently:</p>
+<pre tabindex="0"><code>TX 1: Performing withdrawal on account test_account_id, for $100000
+TX 2: Performing withdrawal on account test_account_id, for $100000
+
+TX 1: Success! $100000 was withdrawn from test_account_id. The account&#39;s new balance is: $0.00
+TX 2: asyncpg.exceptions.SerializationError: could not serialize access due to concurrent update
+</code></pre><p>Do you figure why these kinds of concurrency control are called optimistic?</p>
+<p>Because by default, we don&rsquo;t enforce anything. We only raise errors on concurrent conflicts.
+This is also called &lsquo;first write wins&rsquo;.</p>
+<p>What&rsquo;s the caveat with this concurrency control mechanism? One of the most important considerations ist that you&rsquo;ll have to retry requests whenever this happens.</p>
+<h2 id="decoupling-your-domain-from-any-particular-implementation">Decoupling Your Domain From Any Particular Implementation</h2>
+<p>The main issue with the examples above, is that now your whole application has been coupled with not only with Postgres specific code, but with the Python&rsquo;s library too. What if you want to change either of them?</p>
+<p>Not an easy task.</p>
+<p>The solution is Domain Driven Design. I&rsquo;ve already made an article about these topics in Python.
+If you are interested, you can check it out here:</p>
+<p><a href="/blog/ddd-cqrs-distributed-systems">DDD, CQRS and Distributed Systems in Python</a></p>
+<p>The first step, is to make a generic abstraction to represent a database engine transaction. We&rsquo;ll call this Unit of Work (UOW). The idea is to have a generic context manager where entering opens an <strong>isolated</strong> transaction (with any of the many mechanisms seen before), and when exiting it commits it. Any error should also roll it back.</p>
+<h4 id="example-uow-in-action">Example: UOW In action</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BankAccount</span>(Aggregate):
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">...</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">withdraw</span>(amount):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">assert</span> self<span style="color:#f92672">.</span>__balance <span style="color:#f92672">&gt;=</span> amount
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__balance <span style="color:#f92672">-=</span> amount
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">withdraw</span>(<span style="color:#f92672">...</span>) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Entering this context manager creates a uow and starts a transaction</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">with</span> uow_factory() <span style="color:#66d9ef">as</span> uow:
+</span></span><span style="display:flex;"><span>        repository <span style="color:#f92672">=</span> bank_account_repository_factory(uow)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        bank_account <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> repository<span style="color:#f92672">.</span>find(account_id)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Notice how we don&#39;t have to explicitly call any persistence method on the aggregate,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># as the UOW will take care of that for us</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        bank_account<span style="color:#f92672">.</span>withdraw(amount)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Leaving the context manager will: </span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># * persist the aggregate changes</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># * commit the transaction</span>
+</span></span></code></pre></div><h4 id="example-abstract-unit-of-work">Example: Abstract Unit Of work</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">UnitOfWork</span>(ABC):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Aggregate,  Persistence callback</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__tracked_aggregates: list[tuple[Aggregate, callable]] <span style="color:#f92672">=</span> []
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">track</span>(
+</span></span><span style="display:flex;"><span>        self,
+</span></span><span style="display:flex;"><span>        aggregate: Aggregate,
+</span></span><span style="display:flex;"><span>        persistence_callback: callable,
+</span></span><span style="display:flex;"><span>    ) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__tracked_aggregates<span style="color:#f92672">.</span>append((aggregate, persistence_callback))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">commit</span>(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>_persist_tracked_aggregates()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__tracked_aggregates<span style="color:#f92672">.</span>clear()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>_commit()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">rollback</span>(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__tracked_aggregates<span style="color:#f92672">.</span>clear()
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>_rollback()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_persist_tracked_aggregates</span>(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> aggregate, callback <span style="color:#f92672">in</span> self<span style="color:#f92672">.</span>__tracked_aggregates:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">await</span> callback()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_commit</span>(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_rollback</span>(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span></code></pre></div><h4 id="example-abstract-repositories">Example: Abstract repositories</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Repository</span>[T: Aggregate](ABC):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, uow: UnitOfWork) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__uow <span style="color:#f92672">=</span> uow
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">find</span>(self, entity_id: str) <span style="color:#f92672">-&gt;</span> T <span style="color:#f92672">|</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        aggregate <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>_find(entity_id)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> aggregate <span style="color:#f92672">is</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">None</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__uow<span style="color:#f92672">.</span>track(
+</span></span><span style="display:flex;"><span>            aggregate,
+</span></span><span style="display:flex;"><span>            persistence_callback<span style="color:#f92672">=</span><span style="color:#66d9ef">lambda</span>: self<span style="color:#f92672">.</span>_update(aggregate),
+</span></span><span style="display:flex;"><span>        )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> aggregate
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_find</span>(self, entity_id: str) <span style="color:#f92672">-&gt;</span> T <span style="color:#f92672">|</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@abstractmethod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_update</span>(
+</span></span><span style="display:flex;"><span>        self,
+</span></span><span style="display:flex;"><span>        aggregate: Aggregate,
+</span></span><span style="display:flex;"><span>    ) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BankAccountRepository</span>(Repository[BankAccount], ABC):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">pass</span>
+</span></span></code></pre></div><h3 id="domain-driven-design-postgres-implementation">Domain Driven Design: Postgres Implementation</h3>
+<p>Under the hood, we can create postgres&rsquo; units of work with a serialization level of &lsquo;repeatable_read&rsquo;. Whenever we select - process - update an entity, we can be sure that we won&rsquo;t see the anomalies mentioned beforehand.</p>
+<p>Here is how we can subclass the abstract Units of Work.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PostgresUnitOfWork</span>(UnitOfWork):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, conn: Connection, transaction: Transaction) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>conn <span style="color:#f92672">=</span> conn
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>_transaction <span style="color:#f92672">=</span> transaction
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_commit</span>(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>_transaction<span style="color:#f92672">.</span>commit()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_rollback</span>(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>_transaction<span style="color:#f92672">.</span>rollback()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@contextlib.asynccontextmanager</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">postgres_uow_factory</span>() <span style="color:#f92672">-&gt;</span> AsyncGenerator[PostgresUnitOfWork, <span style="color:#66d9ef">None</span>]:
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">with</span> postgres_pool<span style="color:#f92672">.</span>get_pool()<span style="color:#f92672">.</span>acquire() <span style="color:#66d9ef">as</span> conn:
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># We set serialization level at this stage</span>
+</span></span><span style="display:flex;"><span>        transaction <span style="color:#f92672">=</span> conn<span style="color:#f92672">.</span>transaction(isolation<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;repeatable_read&#34;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> transaction<span style="color:#f92672">.</span>start()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        uow <span style="color:#f92672">=</span> PostgresUnitOfWork(
+</span></span><span style="display:flex;"><span>            conn,
+</span></span><span style="display:flex;"><span>            transaction,
+</span></span><span style="display:flex;"><span>        )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">yield</span> uow
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">await</span> uow<span style="color:#f92672">.</span>commit()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">BaseException</span> <span style="color:#66d9ef">as</span> e:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">await</span> uow<span style="color:#f92672">.</span>rollback()
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">raise</span> e
+</span></span></code></pre></div><p>And here we have the specific repository implementations for postgres:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PostgresBankAccountRepository</span>(BankAccountRepository):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, uow: PostgresUnitOfWork) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__(uow)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>_uow <span style="color:#f92672">=</span> uow
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_find</span>(self, entity_id: str) <span style="color:#f92672">-&gt;</span> BankAccount <span style="color:#f92672">|</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        row <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>_uow<span style="color:#f92672">.</span>conn<span style="color:#f92672">.</span>fetchrow(
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;SELECT * FROM bank_account WHERE account_id = $1&#34;</span>,
+</span></span><span style="display:flex;"><span>            entity_id,
+</span></span><span style="display:flex;"><span>        )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> row <span style="color:#f92672">is</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">None</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> BankAccount(<span style="color:#f92672">**</span>row)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_update</span>(self, aggregate: BankAccount) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        aggregate<span style="color:#f92672">.</span>update_version()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>_uow<span style="color:#f92672">.</span>conn<span style="color:#f92672">.</span>execute(
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;UPDATE bank_account SET balance = $1, version = $2 WHERE account_id = $3&#34;</span>,
+</span></span><span style="display:flex;"><span>            aggregate<span style="color:#f92672">.</span>balance,
+</span></span><span style="display:flex;"><span>            aggregate<span style="color:#f92672">.</span>version,
+</span></span><span style="display:flex;"><span>            aggregate<span style="color:#f92672">.</span>entity_id,
+</span></span><span style="display:flex;"><span>        )
+</span></span></code></pre></div><p>This would be the console output for the Postgres concurrent update:</p>
+<pre tabindex="0"><code>TX 1: Performing withdrawal on account test_account_id, for $100000
+TX 2: Performing withdrawal on account test_account_id, for $100000
+
+TX 1: Success! $100000 was withdrawn from test_account_id. Using Postgres.
+TX 2: Error: could not serialize access due to concurrent update
+</code></pre><h3 id="domain-driven-design-mongodb-implementation">Domain Driven Design: MongoDB Implementation</h3>
+<p>There are other ways of implementing these concurrency controls, even if our database engine doesn&rsquo;t have an explicit &lsquo;repeatable_read&rsquo; isolation level, we can guarantee this for a document or row with an atomic update operation, we just have to check that the row or document was indeed updated.</p>
+<p>For this, we&rsquo;ll have to introduce another abstraction to our domain: a version property. Notice the &lsquo;__version&rsquo; attribute in the root aggregate.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Aggregate</span>(ABC):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, entity_id: str, version: int) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__entity_id <span style="color:#f92672">=</span> entity_id
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__version <span style="color:#f92672">=</span> version
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@property</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">entity_id</span>(self) <span style="color:#f92672">-&gt;</span> str:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>__entity_id
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@property</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">version</span>(self) <span style="color:#f92672">-&gt;</span> int:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>__version
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">update_version</span>(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__version <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BankAccount</span>(Aggregate):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(
+</span></span><span style="display:flex;"><span>        self,
+</span></span><span style="display:flex;"><span>        account_id: str,
+</span></span><span style="display:flex;"><span>        balance: float,
+</span></span><span style="display:flex;"><span>        version: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>,
+</span></span><span style="display:flex;"><span>    ) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__(account_id, version)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__balance <span style="color:#f92672">=</span> balance
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@property</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">account_id</span>(self) <span style="color:#f92672">-&gt;</span> str:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>entity_id
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@property</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">balance</span>(self) <span style="color:#f92672">-&gt;</span> float:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>__balance
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">withdraw</span>(self, amount: float) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">assert</span> self<span style="color:#f92672">.</span>__balance <span style="color:#f92672">&gt;=</span> amount, <span style="color:#e6db74">&#34;Insufficient balance!&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>__balance <span style="color:#f92672">-=</span> amount
+</span></span></code></pre></div><p>Whenever we update the document, we not only search by entity_id but by version too. If another concurrent transaction updated the document, the version number would have been increased, and our update won&rsquo;t succeed. If no documents were updated, we can raise an error.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MongoBankAccountRepository</span>(BankAccountRepository):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, uow: MongoUnitOfWork) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__(uow)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>_uow <span style="color:#f92672">=</span> uow
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>bank_accounts: AsyncIOMotorCollection <span style="color:#f92672">=</span> uow<span style="color:#f92672">.</span>session<span style="color:#f92672">.</span>client[<span style="color:#e6db74">&#34;db&#34;</span>][
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;bank_account&#34;</span>
+</span></span><span style="display:flex;"><span>        ]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">...</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_update</span>(
+</span></span><span style="display:flex;"><span>        self,
+</span></span><span style="display:flex;"><span>        aggregate: BankAccount,
+</span></span><span style="display:flex;"><span>    ) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        previous_version <span style="color:#f92672">=</span> aggregate<span style="color:#f92672">.</span>version
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        aggregate<span style="color:#f92672">.</span>update_version()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        result <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> self<span style="color:#f92672">.</span>bank_accounts<span style="color:#f92672">.</span>update_one(
+</span></span><span style="display:flex;"><span>            {<span style="color:#e6db74">&#34;_id&#34;</span>: aggregate<span style="color:#f92672">.</span>entity_id, <span style="color:#e6db74">&#34;version&#34;</span>: previous_version},
+</span></span><span style="display:flex;"><span>            {<span style="color:#e6db74">&#34;$set&#34;</span>: {<span style="color:#e6db74">&#34;balance&#34;</span>: aggregate<span style="color:#f92672">.</span>balance, <span style="color:#e6db74">&#34;version&#34;</span>: aggregate<span style="color:#f92672">.</span>version}},
+</span></span><span style="display:flex;"><span>        )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> result<span style="color:#f92672">.</span>modified_count <span style="color:#f92672">!=</span> <span style="color:#ae81ff">1</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">raise</span> <span style="color:#a6e22e">Exception</span>(<span style="color:#e6db74">&#34;Serialization error due to concurrent update!&#34;</span>)
+</span></span></code></pre></div><p>Check how in the _update method, we both increment the version counter, and perform an update operation by both id and the previous version criteria.</p>
+<p>Let&rsquo;s see the console output for a concurrent update:</p>
+<pre tabindex="0"><code>TX 1: Performing withdrawal on account test_account_id, for $100000
+TX 2: Performing withdrawal on account test_account_id, for $100000
+
+TX 1: Success! $100000 was withdrawn from test_account_id. Using MongoDB.
+TX 2: Serialization error due to concurrent update!
+</code></pre><p>Did you see how not only we abstracted complex database implementation logic into simple abstractions, but also how easy it was to change specific database engine implementations?</p>
+<p>This is a key pillar of Domain Driven Design and Hexagonal-Architecture.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>I hope this cleared some doubts on concurrency control. You should now research the different benefits and caveats for each mechanism, and see when, how, and where you should implement them. There is no silver bullet, and it will all depend on context.</p>
+<p>You can see the full source code for the examples in <a href="https://github.com/gastonoterom/concurrency-anomalies">this github repo</a>.</p>
+
+      </article>
+      
+
+    </div>
+  </div>
+  <footer>
+    <div class="container mt-4 pb-1">
+    <p class="small">
+        
+        
+    </p>
+</div>
+  </footer>
+
+  </main>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>

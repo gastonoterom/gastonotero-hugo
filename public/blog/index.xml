@@ -6,8 +6,15 @@
     <description>Recent content in Blog on Gaston Otero</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 08 Mar 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 14 Mar 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://gastonotero.com/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Addressing Concurrency Anomalies in Applications</title>
+      <link>https://gastonotero.com/blog/addressing-concurrency-anomalies-in-applications/</link>
+      <pubDate>Fri, 14 Mar 2025 00:00:00 +0000</pubDate>
+      <guid>https://gastonotero.com/blog/addressing-concurrency-anomalies-in-applications/</guid>
+      <description>&lt;p&gt;&lt;em&gt;Or, how exploit an infinite money glitch if your bank uses standard Postgres transactions without locks 👮‍♀️🚔💰.&lt;/em&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;table-of-contents&#34;&gt;Table of Contents&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#introduction&#34;&gt;Introduction&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#select-process-and-update-anti-pattern&#34;&gt;Select, Process, and Update Anti-Pattern&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#pessimistic-solution-lock-the-row&#34;&gt;Pessimistic Solution: Lock the Row&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#optimistic-solution-version-control&#34;&gt;Optimistic Solution: Version Control&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#decoupling-your-domain-from-any-particular-implementation&#34;&gt;Decoupling Your Domain From Any Particular Implementation&lt;/a&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#domain-driven-design-postgres-implementation&#34;&gt;Domain Driven Design: Postgres Implementation&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#domain-driven-design-mongodb-implementation&#34;&gt;Domain Driven Design: MongoDB Implementation&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#conclusion&#34;&gt;Conclusion&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;&#xA;&lt;p&gt;We&amp;rsquo;ll take a look into a very common anti-pattern found in many applications today (you&amp;rsquo;ll be surprised, maybe you&amp;rsquo;ll find this in your own codebase).&lt;/p&gt;</description>
+    </item>
     <item>
       <title>DDD, CQRS and Distributed Systems in Python</title>
       <link>https://gastonotero.com/blog/ddd-cqrs-distributed-systems/</link>
