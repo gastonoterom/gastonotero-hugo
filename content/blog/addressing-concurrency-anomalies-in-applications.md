@@ -6,7 +6,7 @@ author: Gaston Otero
 date: "2025-03-14"
 ---
 
-_Or, how exploit an infinite money glitch if your bank uses standard Postgres transactions without locks 👮‍♀️🚔💰._
+_Or, how exploit an infinite money glitch if your bank uses standard Postgres transactions without locks_
 
 ## Table of Contents
 
@@ -110,6 +110,8 @@ TX 2: Success! $100000 was withdrawn from test_account_id. The account's new bal
 ```
 
 As you can see, by default, postgres' transactions don't have strong concurrency guarantees.
+
+We fetched both rows before the other concurrent transaction modified it! We bypassed the business logic domain rules!
 
 > Damn, how can we solve this?
 
