@@ -165,6 +165,18 @@ row = await conn.fetchrow(
 )
 ```
 
+Here is the console output:
+
+```
+TX 1: Performing withdrawal on account test_account_id, for $100000
+TX 2: Performing withdrawal on account test_account_id, for $100000
+
+TX 1: Success! $100000 was withdrawn from test_account_id. The account's new balance is: $0.00
+TX 2: AssertionError: Insufficient balance for withdrawal!
+```
+
+This mechanism is very natural, it's easy to wrap your head around it.
+
 There are of course many considerations with database locks, I'd suggest you read the Postgres' official documentation for [Explicit Locks](https://www.postgresql.org/docs/current/explicit-locking.html). Here is a brief summary:
 
 

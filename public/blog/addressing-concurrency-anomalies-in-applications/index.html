@@ -203,7 +203,14 @@ TX 2: Success! $100000 was withdrawn from test_account_id. The account&#39;s new
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>row <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> conn<span style="color:#f92672">.</span>fetchrow(
 </span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;SELECT * FROM bank_account WHERE account_id = $1 FOR UPDATE&#34;</span>, account_id
 </span></span><span style="display:flex;"><span>)
-</span></span></code></pre></div><p>There are of course many considerations with database locks, I&rsquo;d suggest you read the Postgres&rsquo; official documentation for <a href="https://www.postgresql.org/docs/current/explicit-locking.html">Explicit Locks</a>. Here is a brief summary:</p>
+</span></span></code></pre></div><p>Here is the console output:</p>
+<pre tabindex="0"><code>TX 1: Performing withdrawal on account test_account_id, for $100000
+TX 2: Performing withdrawal on account test_account_id, for $100000
+
+TX 1: Success! $100000 was withdrawn from test_account_id. The account&#39;s new balance is: $0.00
+TX 2: AssertionError: Insufficient balance for withdrawal!
+</code></pre><p>This mechanism is very natural, it&rsquo;s easy to wrap your head around it.</p>
+<p>There are of course many considerations with database locks, I&rsquo;d suggest you read the Postgres&rsquo; official documentation for <a href="https://www.postgresql.org/docs/current/explicit-locking.html">Explicit Locks</a>. Here is a brief summary:</p>
 <blockquote>
 <p>For Update:</p>
 <p>[&hellip;] FOR UPDATE causes the rows retrieved by the SELECT statement to be locked as though for update.</p>
