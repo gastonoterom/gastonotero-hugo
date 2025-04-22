@@ -1,7 +1,7 @@
 ---
 id: satoshi-spark
 title: Satoshi Spark 🚀 🔥
-description: React Next landing page, with a blog, resume and projects section.
+description: DDD Project for Bitcoin Crowdfunding.
 author: Gaston Otero
 date: "2025-03-08"
 ---
