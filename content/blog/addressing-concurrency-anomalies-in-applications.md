@@ -213,7 +213,8 @@ _I'll wait for you in the Bahamas honey._
 We can implement this in two ways. 
 
 * First alternative: Use Postgres [Repeatable Read](https://www.postgresql.org/docs/current/transaction-iso.html#XACT-REPEATABLE-READ) isolation level for transactions
-    * This isolation level guarantees that the data you update is the same as the one you once read, if another transaction committed data in-between, postgres will raise a serialization error when you try to commit.
+    * This isolation level guarantees that the data you update is the same as the one you once read, if another transaction committed data in-between, postgres will raise a serialization error when you try to commit. 
+    * It's important to note that not all database engines raise a serialization error at this isolation level. MySQL for example, only guarantees that the transaction itself will have repeatable reads, but not that the updates will be consistent with it.
 
 * Second alternative: Update using version column
     * We'll look at this later on this article with a [MongoDB and DDD (Domain Driven Design) implementation](#domain-driven-design-mongodb-implementation)

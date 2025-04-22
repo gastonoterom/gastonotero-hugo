@@ -6,4 +6,4 @@ I’m a __software engineer__ with a deep passion for building __high-performanc
 
 Feel free to check out my [github](https://github.com/gastonoterom). 
 
-You can reach me via [linkedin](https://www.linkedin.com/in/gaston-otero/), or [mail](mailto:mail@gastonotero.com)
+You can reach me via [linkedin](https://www.linkedin.com/in/gaston-otero/), or [mail](mailto:mail@gastonotero.com).
