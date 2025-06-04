@@ -1,6 +1,6 @@
 ---
 id: library-of-babel
-title: "Notes from the Library of Babel: Counter Culture in the Gen-AI Era"
+title: "Notes from the Library of Babel"
 description: "Notes From the Library of Babel: Counter Culture in the Gen-AI Era"
 author: Gaston Otero
 date: "2025-06-04"
