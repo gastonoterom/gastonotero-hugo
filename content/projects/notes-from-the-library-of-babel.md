@@ -40,4 +40,4 @@ My only request to you is to collaborate. Step your foot on the break and take a
 
 My idea is not to put just _any good_ resource, but instead the best of the best, _la crème de la crème_.
 
-You can find the full Github repository here: [Notes From the Library of Babel](https://github.com/gastonoterom/library-of-babel/edit/main/README.md). It will contain all the updated, curated and filtered resources.
+You can find the full Github repository here: [Notes From the Library of Babel](https://github.com/gastonoterom/library-of-babel). It will contain all the updated, curated and filtered resources.
