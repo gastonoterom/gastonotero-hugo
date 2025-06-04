@@ -6,8 +6,15 @@
     <description>Recent content on Gaston Otero</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 14 Mar 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 04 Jun 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://gastonotero.com/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Notes from the Library of Babel: Counter Culture in the Gen-AI Era</title>
+      <link>https://gastonotero.com/projects/notes-from-the-library-of-babel/</link>
+      <pubDate>Wed, 04 Jun 2025 00:00:00 +0000</pubDate>
+      <guid>https://gastonotero.com/projects/notes-from-the-library-of-babel/</guid>
+      <description>&lt;p&gt;The &lt;a href=&#34;https://sites.evergreen.edu/politicalshakespeares/wp-content/uploads/sites/226/2015/12/Borges-The-Library-of-Babel.pdf&#34;&gt;Library of Babel&lt;/a&gt; is a short story by the Argentinian author Jorge Luis Borges, that refers to a universe, in the shape of a library, which contains books for all the different possible permutations of the language. This means: every thought, word, or idea ever imagined.&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;When it was announced that the Library contained all books, the first&#xA;reaction was unbounded joy. All men felt themselves the possessors of an&#xA;intact and secret treasure. There was no personal problem, no world problem,&#xA;whose eloquent solution did not exist.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Addressing Concurrency Anomalies in Applications</title>
       <link>https://gastonotero.com/blog/addressing-concurrency-anomalies-in-applications/</link>
