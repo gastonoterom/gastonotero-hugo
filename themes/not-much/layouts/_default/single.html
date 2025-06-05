@@ -18,6 +18,13 @@
       </header>
       <article>
         {{ .Content }}
+
+        <section id="comments">
+          <script src="https://utteranc.es/client.js" repo="gastonotero/gastonotero-hugo" issue-term="pathname"
+            theme="preferred-color-scheme" crossorigin="anonymous" async>
+            </script>
+        </section>
+  
       </article>
       {{ partial "terms.html" (dict "taxonomy" "tags" "page" .) }}
     </div>
