@@ -1,36 +1,53 @@
 :root {
-    --bg-color: #e6e9ef;
-    --bg-variant: #dce0e8;
-    --primary: #ff2340;
-    --primary-variant: #ff405a;
-    --secondary: #04a5e5;
+    --bg-color: #282828;
+    /* bg0_h */
+    --bg-variant: #282828;
+    /* bg0 */
+    --primary: #cc241d;
+    /* red */
+    --primary-variant: #fb4934;
+    /* bright red */
+    --secondary: #458588;
+    /* blue */
+    --accent-yellow: #fabd2f;
+    /* bright yellow */
+    --accent-orange: #fe8019;
+    /* bright orange */
+    --accent-green: #b8bb26;
+    /* bright green */
+    --accent-purple: #d3869b;
+    /* bright purple */
+    --text-primary: #fbf1c7;
+    /* fg0 */
+    --text-secondary: #ebdbb2;
+    /* fg1 */
+    --text-muted: #d5c4a1;
+    /* fg2 */
 
-    h2 {
-        color: #FF5D73;
-    }
-    
-    h3 {
-        color: #ff4d6d;
-    }
-
-    h4 {
-        color: #ff758f;
-    }
-
-    strong {
-        color: #c9184a;
-    }
-
-    img {
-        width: 100%;
-    }
+    color-scheme: dark;
 }
 
-.dark {
-    --bg-color: #1E201E;
-    --bg-variant: #060606;
-    --primary: #FF5D73;
-    --primary-variant: #ff475f;
-    --secondary: #f7f5dd;
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
 }
 
+h2 {
+    color: var(--accent-yellow);
+}
+
+h3 {
+    color: var(--primary);
+}
+
+h4 {
+    color: var(--primary-variant);
+}
+
+strong {
+    color: var(--accent-orange);
+}
+
+img {
+    width: 100%;
+}
