@@ -6,8 +6,15 @@
     <description>Recent content in Blog on Gaston Otero</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 14 Mar 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 16 Aug 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://gastonotero.com/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>[Video] API Spec First Development</title>
+      <link>https://gastonotero.com/blog/api-spec-first-development/</link>
+      <pubDate>Sat, 16 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>https://gastonotero.com/blog/api-spec-first-development/</guid>
+      <description>&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;&#xA;&lt;p&gt;In this video, I explore the &lt;strong&gt;API Spec First Development&lt;/strong&gt; methodology, an approach on building robust and well-designed systems. This methodology emphasizes creating comprehensive API specifications before writing any implementation code, ensuring better collaboration, clearer contracts, and more maintainable systems.&lt;/p&gt;&#xA;&lt;h2 id=&#34;watch-the-video&#34;&gt;Watch the Video&lt;/h2&gt;&#xA;&lt;!-- raw HTML omitted --&gt;&#xA;&lt;hr&gt;&#xA;&lt;p&gt;&lt;em&gt;This video is part of my ongoing series on modern software development practices. Stay tuned for more content on API design, distributed systems, and software architecture.&lt;/em&gt;&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Addressing Concurrency Anomalies in Applications</title>
       <link>https://gastonotero.com/blog/addressing-concurrency-anomalies-in-applications/</link>
