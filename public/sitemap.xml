@@ -3,12 +3,15 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://gastonotero.com/</loc>
-    <lastmod>2025-08-16T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://gastonotero.com/blog/api-spec-first-development/</loc>
-    <lastmod>2025-08-16T00:00:00+00:00</lastmod>
+    <lastmod>2026-01-27T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://gastonotero.com/blog/</loc>
+    <lastmod>2026-01-27T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://gastonotero.com/blog/never-throw-exceptions/</loc>
+    <lastmod>2026-01-27T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://gastonotero.com/blog/api-spec-first-development/</loc>
     <lastmod>2025-08-16T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://gastonotero.com/projects/notes-from-the-library-of-babel/</loc>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+<head>
+  
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="shortcut icon" type="image/png" href="https://gastonotero.com/favicon.ico" />
+<meta property="og:url" content="https://gastonotero.com/blog/system-errors/">
+  <meta property="og:site_name" content="Gaston Otero">
+  <meta property="og:title" content="Gaston Otero">
+  <meta property="og:description" content="Never Throw Exceptions: make the implicit explicit Most languages have incomplete type declarations Consider this innocent-looking function type declaration:
+type WarmGreeting = (name: string) =&gt; string; Now, let’s read the implementation:
+const warmGreeting: WarmGreeting = (name) =&gt; { if (name.startsWith(&#34;Dr.&#34;)) { throw new Error(&#34;Formal titles require different greeting format&#34;); } return &#34;Hello &#34; &#43; name &#43; &#34; ☺️!&#34;; }; How in the world are we supposed to know that from the type signature alone!?
+Do you really expect me to predict these things? Am I supposed to know every possible scenario for every different domain?">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+
+<title>Gaston Otero | </title>
+
+      <link rel="stylesheet" href="/css/main.min.4524882f5d1196622ca104ab1aad53fdc14a51b37d18dd767cbe40cde6310feb.css" integrity="sha256-RSSIL10RlmIsoQSrGq1T/cFKUbN9GN12fL5AzeYxD&#43;s=" crossorigin="anonymous">
+  
+        <link rel="stylesheet" href="/css/palette/custom-palette.min.4bbf4cae9b85f05917cf04a1096c10776422cd780c27d52706dfe9fd39fc2ce4.css" integrity="sha256-S79MrpuF8FkXzwShCWwQd2QizXgMJ9UnBt/p/Tn8LOQ=" crossorigin="anonymous">
+
+      <script src="/js/main.86bb3d8e6f46df0fc97c2731e6b99175a13b87a4086acf578ff9b6992fcf32c1.js" integrity="sha256-hrs9jm9G3w/JfCcx5rmRdaE7h6QIas9Xj/m2mS/PMsE=" crossorigin="anonymous"></script>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+</head>
+
+  
+<body
+    class="dark text-light"
+>
+  
+  <main>
+    
+  <div class="container pt-5">
+    <div class="row mt-5 pt-5">
+      
+  <nav aria-label="breadcrumb" class="small">
+    <ol class="breadcrumb fw-bold">
+    <li class="breadcrumb-item">
+      <a href="/"
+        
+      >about</a>
+      
+    </li>
+    <li class="breadcrumb-item">
+      <a href="/blog"
+        class="text-decoration-underline link-offset-3"
+        
+      >blog</a>
+      
+    </li>
+    <li class="breadcrumb-item">
+      <a href="/projects"
+        
+      >projects</a>
+      
+    </li>
+    </ol>
+  </nav>
+
+    </div>
+    <div class="post">
+      <header class="mb-5">
+        <h1 class="text-uppercase"></h1>
+        
+        
+        <div aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item small">
+              <time datetime="0001-01-01T00:00:00&#43;00:00">January 1, 1</time>
+            </li>
+          </ol>
+        </div>
+      </header>
+      <article>
+        <h1 id="never-throw-exceptions-make-the-implicit-explicit">Never Throw Exceptions: make the implicit explicit</h1>
+<h2 id="most-languages-have-incomplete-type-declarations">Most languages have incomplete type declarations</h2>
+<p>Consider this innocent-looking function type declaration:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">WarmGreeting</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">name</span>: <span style="color:#66d9ef">string</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">string</span>;
+</span></span></code></pre></div><p>Now, let&rsquo;s read the implementation:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">warmGreeting</span>: <span style="color:#66d9ef">WarmGreeting</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">name</span>) <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">name</span>.<span style="color:#a6e22e">startsWith</span>(<span style="color:#e6db74">&#34;Dr.&#34;</span>)) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> Error(<span style="color:#e6db74">&#34;Formal titles require different greeting format&#34;</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;Hello &#34;</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">name</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34; ☺️!&#34;</span>;
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>How in the world are we supposed to know that from the type signature alone!?</p>
+<p>Do you really expect me to predict these things? Am I supposed to know every possible scenario for every different domain?</p>
+<p>This type of code really frustrates me. I&rsquo;ve found myself in many situations where calling seemingly innocent functions ends really badly.</p>
+<p>Let&rsquo;s analyze a more common situation:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Division</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">number</span>) <span style="color:#f92672">=&gt;</span> (<span style="color:#a6e22e">b</span>: <span style="color:#66d9ef">number</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">number</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">division</span>: <span style="color:#66d9ef">Division</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">a</span>) <span style="color:#f92672">=&gt;</span> (<span style="color:#a6e22e">b</span>) <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">b</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> Error(<span style="color:#e6db74">&#34;Division by zero is not allowed&#34;</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">a</span> <span style="color:#f92672">/</span> <span style="color:#a6e22e">b</span>;
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>Yes, yes, you probably already knew this limitation, but extrapolate these scenarios to domains you are not very familiar with and things can go wrong very quickly.</p>
+<h2 id="error-throwing-is-unpredictable">Error throwing is unpredictable</h2>
+<p>When you throw an exception, your code suddenly jumps to an unknown location somewhere up the call stack, bypassing everything in between. You can&rsquo;t see where you&rsquo;ll end up just by reading the function&rsquo;s type signature. Unpredictability makes code harder to reason about, harder to test, and harder to maintain.</p>
+<p>We&rsquo;ll try to find a way to make errors explicit in the type system.</p>
+<h2 id="typing-errors-with-resulte-t">Typing errors with <code>Result&lt;E, T&gt;</code></h2>
+<p>Let&rsquo;s make failure explicit in the type system using the Result type:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Result</span>&lt;<span style="color:#f92672">E</span>, <span style="color:#a6e22e">T</span>&gt; <span style="color:#f92672">=</span> { <span style="color:#a6e22e">value</span>: <span style="color:#66d9ef">E</span>; <span style="color:#a6e22e">__tag</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;error&#34;</span> } <span style="color:#f92672">|</span> { <span style="color:#a6e22e">value</span>: <span style="color:#66d9ef">T</span>; <span style="color:#a6e22e">__tag</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;ok&#34;</span> };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">ok</span> <span style="color:#f92672">=</span> &lt;<span style="color:#f92672">E</span>, <span style="color:#a6e22e">T</span>&gt;(<span style="color:#a6e22e">val</span>: <span style="color:#66d9ef">T</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Result</span>&lt;<span style="color:#f92672">E</span>, <span style="color:#a6e22e">T</span>&gt; <span style="color:#f92672">=&gt;</span> ({ <span style="color:#a6e22e">value</span>: <span style="color:#66d9ef">val</span>, <span style="color:#a6e22e">__tag</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;ok&#34;</span> });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">=</span> &lt;<span style="color:#f92672">E</span>, <span style="color:#a6e22e">T</span>&gt;(<span style="color:#a6e22e">val</span>: <span style="color:#66d9ef">E</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Result</span>&lt;<span style="color:#f92672">E</span>, <span style="color:#a6e22e">T</span>&gt; <span style="color:#f92672">=&gt;</span> ({ <span style="color:#a6e22e">value</span>: <span style="color:#66d9ef">val</span>, <span style="color:#a6e22e">__tag</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;error&#34;</span> });
+</span></span></code></pre></div><p>We can define <code>Result&lt;E, T&gt;</code> as a computation that can either fail with a value of type <code>E</code> or succeed with a value of type <code>T</code>.</p>
+<p>Now we can define error-aware functions:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">OperationError</span> <span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">|</span> { <span style="color:#66d9ef">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;DIVISION_BY_ZERO&#34;</span>; <span style="color:#a6e22e">dividend</span>: <span style="color:#66d9ef">number</span> }
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">|</span> { <span style="color:#66d9ef">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;INDETERMINATE&#34;</span> }
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">|</span> { <span style="color:#66d9ef">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;NEGATIVE_INPUT&#34;</span>; <span style="color:#a6e22e">value</span>: <span style="color:#66d9ef">number</span> };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">SafeDivision</span> <span style="color:#f92672">=</span> (
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">number</span>
+</span></span><span style="display:flex;"><span>) <span style="color:#f92672">=&gt;</span> (<span style="color:#a6e22e">b</span>: <span style="color:#66d9ef">number</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">Result</span>&lt;<span style="color:#f92672">OperationError</span>, <span style="color:#a6e22e">number</span>&gt;;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">safeDivision</span>: <span style="color:#66d9ef">SafeDivision</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">a</span>) <span style="color:#f92672">=&gt;</span> (<span style="color:#a6e22e">b</span>) <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">b</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">a</span> <span style="color:#f92672">!==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>({ <span style="color:#66d9ef">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;DIVISION_BY_ZERO&#34;</span>, <span style="color:#a6e22e">dividend</span>: <span style="color:#66d9ef">a</span> });
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">b</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">a</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>({ <span style="color:#66d9ef">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;INDETERMINATE&#34;</span> });
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">ok</span>(<span style="color:#a6e22e">a</span> <span style="color:#f92672">/</span> <span style="color:#a6e22e">b</span>);
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">RealSqrt</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">number</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">Result</span>&lt;<span style="color:#f92672">OperationError</span>, <span style="color:#a6e22e">number</span>&gt;;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">realSqrt</span>: <span style="color:#66d9ef">RealSqrt</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">a</span>) <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">a</span> <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>({ <span style="color:#66d9ef">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;NEGATIVE_INPUT&#34;</span>, <span style="color:#a6e22e">value</span>: <span style="color:#66d9ef">a</span> });
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">ok</span>(Math.<span style="color:#a6e22e">sqrt</span>(<span style="color:#a6e22e">a</span>));
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">AddTwo</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">number</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">number</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">addTwo</span>: <span style="color:#66d9ef">AddTwo</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">a</span>) <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">a</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>;
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>Notice how operations that can fail have an explicit error interface while pure functions like <code>addTwo</code> just have a simple unwrapped return type?</p>
+<h2 id="addressing-composition">Addressing composition</h2>
+<p>Suppose we want to compute: √(a/b) + 2</p>
+<p>The naive approach is verbose:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">SqrtOfDivisionPlusTwo</span> <span style="color:#f92672">=</span> (
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">number</span>
+</span></span><span style="display:flex;"><span>) <span style="color:#f92672">=&gt;</span> (<span style="color:#a6e22e">b</span>: <span style="color:#66d9ef">number</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">Result</span>&lt;<span style="color:#f92672">OperationError</span>, <span style="color:#a6e22e">number</span>&gt;;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">sqrtOfDivisionPlusTwo</span>: <span style="color:#66d9ef">SqrtOfDivisionPlusTwo</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">a</span>) <span style="color:#f92672">=&gt;</span> (<span style="color:#a6e22e">b</span>) <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">divResult</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">safeDivision</span>(<span style="color:#a6e22e">a</span>)(<span style="color:#a6e22e">b</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">divResult</span>.<span style="color:#a6e22e">__tag</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#34;error&#34;</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">divResult</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">sqrtResult</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">realSqrt</span>(<span style="color:#a6e22e">divResult</span>.<span style="color:#a6e22e">value</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">sqrtResult</span>.<span style="color:#a6e22e">__tag</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#34;error&#34;</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">sqrtResult</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">plusTwo</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">addTwo</span>(<span style="color:#a6e22e">sqrtResult</span>.<span style="color:#a6e22e">value</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">ok</span>(<span style="color:#a6e22e">plusTwo</span>);
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>This pattern of &ldquo;unwrap, check, short-circuit if error, continue if success&rdquo; repeats constantly. We can abstract this.</p>
+<h2 id="introducing-map-and-flatmap">Introducing map and flatMap</h2>
+<p>We can abstract the repetitive pattern into two fundamental operations: <code>map</code> and <code>flatMap</code>.</p>
+<h3 id="the-map-operation">The map operation</h3>
+<p>Given a pure function <code>f: A → B</code> and a computation <code>ma: Result&lt;E, A&gt;</code>, the <code>map</code> operation applies <code>f</code> to the value contained in <code>ma</code> if it represents a success, otherwise it propagates the error:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Map</span> <span style="color:#f92672">=</span> &lt;<span style="color:#f92672">A</span>, <span style="color:#a6e22e">B</span>&gt;(<span style="color:#a6e22e">func</span><span style="color:#f92672">:</span> (<span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">A</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">B</span>) <span style="color:#f92672">=&gt;</span> &lt;<span style="color:#f92672">E</span>&gt;(<span style="color:#a6e22e">ma</span>: <span style="color:#66d9ef">Result</span>&lt;<span style="color:#f92672">E</span>, <span style="color:#a6e22e">A</span>&gt;) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">Result</span>&lt;<span style="color:#f92672">E</span>, <span style="color:#a6e22e">B</span>&gt;;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">map</span>: <span style="color:#66d9ef">Map</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">func</span>) <span style="color:#f92672">=&gt;</span> (<span style="color:#a6e22e">ma</span>) <span style="color:#f92672">=&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">ma</span>.<span style="color:#a6e22e">__tag</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#34;error&#34;</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">ma</span> : <span style="color:#66d9ef">ok</span>(<span style="color:#a6e22e">func</span>(<span style="color:#a6e22e">ma</span>.<span style="color:#a6e22e">value</span>));
+</span></span></code></pre></div><p>The type signature <code>Map: (A → B) → Result&lt;E, A&gt; → Result&lt;E, B&gt;</code> indicates that <code>map</code> lifts a pure function into the <code>Result</code> context, transforming the success type while preserving the error type.</p>
+<h3 id="the-nested-result-problem">The nested Result problem</h3>
+<p>When composing computations that may fail, we encounter a structural issue. Consider applying a function <code>f: A → Result&lt;E, B&gt;</code> to a value <code>ma: Result&lt;E, A&gt;</code> using <code>map</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#75715e">// Applying map with a function that returns Result yields nested Results:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">result</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">realSqrt</span>)(<span style="color:#a6e22e">safeDivision</span>(<span style="color:#ae81ff">10</span>)(<span style="color:#ae81ff">2</span>));
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Type: Result&lt;OperationError, Result&lt;OperationError, number&gt;&gt;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">//        ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">//        Outer Result           Inner Result
+</span></span></span></code></pre></div><p>This yields the following nested structure: <code>Result&lt;E, Result&lt;E, T&gt;&gt;</code>.</p>
+<h3 id="the-flatmap-operation">The flatMap operation</h3>
+<p><code>flatMap</code> (also known as <code>bind</code> or <code>&gt;&gt;=</code>) resolves this by applying a function <code>f: A → Result&lt;E, B&gt;</code> and flattening the resulting nested structure. The operation propagates errors and applies the function only when the input represents a success:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">FlatMap</span> <span style="color:#f92672">=</span> &lt;<span style="color:#f92672">E</span>, <span style="color:#a6e22e">A</span>, <span style="color:#a6e22e">B</span>&gt;(
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">func</span><span style="color:#f92672">:</span> (<span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">A</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">Result</span>&lt;<span style="color:#f92672">E</span>, <span style="color:#a6e22e">B</span>&gt;
+</span></span><span style="display:flex;"><span>) <span style="color:#f92672">=&gt;</span> (<span style="color:#a6e22e">ma</span>: <span style="color:#66d9ef">Result</span>&lt;<span style="color:#f92672">E</span>, <span style="color:#a6e22e">A</span>&gt;) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">Result</span>&lt;<span style="color:#f92672">E</span>, <span style="color:#a6e22e">B</span>&gt;;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">flatMap</span>: <span style="color:#66d9ef">FlatMap</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">func</span>) <span style="color:#f92672">=&gt;</span> (<span style="color:#a6e22e">ma</span>) <span style="color:#f92672">=&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">ma</span>.<span style="color:#a6e22e">__tag</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#34;error&#34;</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">ma</span> : <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">ma</span>.<span style="color:#a6e22e">value</span>);
+</span></span></code></pre></div><p>The type signature <code>FlatMap: (A → Result&lt;E, B&gt;) → Result&lt;E, A&gt; → Result&lt;E, B&gt;</code> ensures that the result remains a single <code>Result</code> layer, enabling sequential composition of computations that may fail.</p>
+<p>Can you spot the implementation difference between map and flatMap, besides the types?</p>
+<p><strong>Distinction:</strong></p>
+<ul>
+<li><code>map</code>: Lifts pure functions <code>(A → B)</code> into the <code>Result</code> context</li>
+<li><code>flatMap</code>: Composes computations that may fail <code>(A → Result&lt;E, B&gt;)</code> while preserving a flat structure</li>
+</ul>
+<p>Now our composition becomes a bit more elegant:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Pipe</span> <span style="color:#f92672">=</span> &lt;<span style="color:#f92672">A</span>, <span style="color:#a6e22e">B</span>, <span style="color:#a6e22e">C</span>, <span style="color:#a6e22e">D</span>&gt;(
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">initial</span>: <span style="color:#66d9ef">A</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">f1</span><span style="color:#f92672">:</span> (<span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">A</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">B</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">f2</span><span style="color:#f92672">:</span> (<span style="color:#a6e22e">b</span>: <span style="color:#66d9ef">B</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">C</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">f3</span><span style="color:#f92672">:</span> (<span style="color:#a6e22e">c</span>: <span style="color:#66d9ef">C</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">D</span>
+</span></span><span style="display:flex;"><span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">D</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">pipe</span>: <span style="color:#66d9ef">Pipe</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">initial</span>, <span style="color:#a6e22e">f1</span>, <span style="color:#a6e22e">f2</span>, <span style="color:#a6e22e">f3</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">f3</span>(<span style="color:#a6e22e">f2</span>(<span style="color:#a6e22e">f1</span>(<span style="color:#a6e22e">initial</span>)));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">sqrtOfDivisionPlusTwo</span>: <span style="color:#66d9ef">SqrtOfDivisionPlusTwo</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">a</span>) <span style="color:#f92672">=&gt;</span> (<span style="color:#a6e22e">b</span>) <span style="color:#f92672">=&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pipe</span>(<span style="color:#a6e22e">b</span>, <span style="color:#a6e22e">safeDivision</span>(<span style="color:#a6e22e">a</span>), <span style="color:#a6e22e">flatMap</span>(<span style="color:#a6e22e">realSqrt</span>), <span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">addTwo</span>));
+</span></span></code></pre></div><p><strong>Exercise for the reader</strong>: create a more generic <code>pipe</code> function with non-fixed parameter arguments.</p>
+<h2 id="representing-absence-of-values-with-the-option-wrapper">Representing absence of values with the Option wrapper</h2>
+<p>Beyond errors, another common scenario is representing the <em>absence</em> of a value. Consider a function that finds an element in an array:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">FindUser</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">users</span>: <span style="color:#66d9ef">User</span>[]) <span style="color:#f92672">=&gt;</span> (<span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">string</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">User</span> <span style="color:#f92672">|</span> <span style="color:#66d9ef">undefined</span>;
+</span></span></code></pre></div><p>The <code>undefined</code> return type doesn&rsquo;t compose well. We can apply the same wrapper pattern we used for errors:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Option</span>&lt;<span style="color:#f92672">A</span>&gt; <span style="color:#f92672">=</span> { <span style="color:#a6e22e">value</span>: <span style="color:#66d9ef">A</span>; <span style="color:#a6e22e">__tag</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;some&#34;</span> } <span style="color:#f92672">|</span> { <span style="color:#a6e22e">__tag</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;none&#34;</span> };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">some</span> <span style="color:#f92672">=</span> &lt;<span style="color:#f92672">A</span>&gt;(<span style="color:#a6e22e">value</span>: <span style="color:#66d9ef">A</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Option</span>&lt;<span style="color:#f92672">A</span>&gt; <span style="color:#f92672">=&gt;</span> ({ <span style="color:#a6e22e">value</span>, <span style="color:#a6e22e">__tag</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;some&#34;</span> });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">none</span> <span style="color:#f92672">=</span> &lt;<span style="color:#f92672">A</span>&gt;()<span style="color:#f92672">:</span> <span style="color:#a6e22e">Option</span>&lt;<span style="color:#f92672">A</span>&gt; <span style="color:#f92672">=&gt;</span> ({ <span style="color:#a6e22e">__tag</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;none&#34;</span> });
+</span></span></code></pre></div><p><code>Option&lt;A&gt;</code> represents a computation that may or may not produce a value of type <code>A</code>.</p>
+<p>Notice the structural similarity to <code>Result&lt;E, A&gt;</code>.</p>
+<p><strong>Exercise for the reader:</strong> Implement <code>map</code> and <code>flatMap</code> for <code>Option&lt;A&gt;</code> following the same pattern we used for <code>Result</code>.</p>
+<h2 id="abstracting-the-wrapper-type">Abstracting the wrapper type</h2>
+<p>You may have noticed that <code>Result</code> and <code>Option</code> seem similar. Both are wrapper types that:</p>
+<ol>
+<li>Wrap a value (<code>ok</code>/<code>some</code>)</li>
+<li>Support <code>flatMap</code> for sequential composition</li>
+</ol>
+<p>This pattern has a name in category theory: <strong>Monad</strong>.</p>
+<p>A Monad is any type constructor <code>M&lt;A&gt;</code> equipped with two operations:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Of</span> <span style="color:#f92672">=</span> &lt;<span style="color:#f92672">A</span>&gt;(<span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">A</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">M</span>&lt;<span style="color:#f92672">A</span>&gt;;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">FlatMap</span> <span style="color:#f92672">=</span> &lt;<span style="color:#f92672">A</span>, <span style="color:#a6e22e">B</span>&gt;(<span style="color:#a6e22e">func</span><span style="color:#f92672">:</span> (<span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">A</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">M</span>&lt;<span style="color:#f92672">B</span>&gt;) <span style="color:#f92672">=&gt;</span> (<span style="color:#a6e22e">ma</span>: <span style="color:#66d9ef">M</span>&lt;<span style="color:#f92672">A</span>&gt;) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">M</span>&lt;<span style="color:#f92672">B</span>&gt;;
+</span></span></code></pre></div><p>Note that map can be derived from <code>flatMap</code> &amp; <code>of</code>. An equivalent formulation uses <code>join</code>: <code>M&lt;M&lt;A&gt;&gt; → M&lt;A&gt;</code> instead of flatMap, they&rsquo;re interderivable.
+We won&rsquo;t go into details here, and if you know this already, this article is probably well beneath you.</p>
+<h3 id="the-three-monad-laws">The three monad laws</h3>
+<p>To qualify as a proper Monad, these operations must satisfy three laws:</p>
+<p><strong>1. Left Identity</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#a6e22e">flatMap</span>(<span style="color:#a6e22e">f</span>)(<span style="color:#66d9ef">of</span>(<span style="color:#a6e22e">a</span>)) <span style="color:#f92672">&lt;===&gt;</span> <span style="color:#a6e22e">f</span>(<span style="color:#a6e22e">a</span>);
+</span></span></code></pre></div><p><strong>2. Right Identity</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#a6e22e">flatMap</span>(<span style="color:#66d9ef">of</span>)(<span style="color:#a6e22e">ma</span>) <span style="color:#f92672">&lt;===&gt;</span> <span style="color:#a6e22e">ma</span>;
+</span></span></code></pre></div><p><strong>3. Associativity</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#a6e22e">flatMap</span>(<span style="color:#a6e22e">g</span>)(<span style="color:#a6e22e">flatMap</span>(<span style="color:#a6e22e">f</span>)(<span style="color:#a6e22e">ma</span>)) <span style="color:#f92672">&lt;===&gt;</span> <span style="color:#a6e22e">flatMap</span>((<span style="color:#a6e22e">a</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">flatMap</span>(<span style="color:#a6e22e">g</span>)(<span style="color:#a6e22e">f</span>(<span style="color:#a6e22e">a</span>)))(<span style="color:#a6e22e">ma</span>);
+</span></span></code></pre></div><p>These laws ensure that monadic composition behaves predictably and that the operations are consistent.</p>
+<p><strong>Exercise for the reader:</strong> Do our <code>Result</code> and <code>Option</code> types satisfy the three laws?</p>
+<p><strong>Exercise for the reader:</strong> What about the <code>Promise&lt;T&gt;</code> type in TypeScript? It appears similar, but does it really satisfy the three laws?</p>
+<h2 id="real-world-implementations">Real-world implementations</h2>
+<p>Throughout this article, we&rsquo;ve built <code>Result</code> and <code>Option</code> from scratch to understand the underlying concepts. In practice, mature implementations already exist at language level or in well-tested libraries.</p>
+<p><strong>Rust</strong> has <code>Result&lt;T, E&gt;</code> and <code>Option&lt;T&gt;</code> as first-class citizens in the language, with syntactic sugar like the <code>?</code> operator for ergonomic error propagation:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">sqrt_of_division</span>(a: <span style="color:#66d9ef">f64</span>, b: <span style="color:#66d9ef">f64</span>) -&gt; Result<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">f64</span>, MathError<span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> div <span style="color:#f92672">=</span> safe_division(a, b)<span style="color:#f92672">?</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> sqrt <span style="color:#f92672">=</span> real_sqrt(div)<span style="color:#f92672">?</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    Ok(sqrt <span style="color:#f92672">+</span> <span style="color:#ae81ff">2.0</span>)
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p><strong>Haskell</strong> has the <code>Either</code> type (equivalent to our <code>Result</code>) and <code>Maybe</code> (equivalent to our <code>Option</code>), along with do-notation for monadic composition:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-haskell" data-lang="haskell"><span style="display:flex;"><span><span style="color:#a6e22e">sqrtOfDivision</span> <span style="color:#f92672">::</span> <span style="color:#66d9ef">Double</span> <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">Double</span> <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">Either</span> <span style="color:#66d9ef">MathError</span> <span style="color:#66d9ef">Double</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">sqrtOfDivision</span> a b <span style="color:#f92672">=</span> <span style="color:#66d9ef">do</span>
+</span></span><span style="display:flex;"><span>    div <span style="color:#f92672">&lt;-</span> safeDivision a b
+</span></span><span style="display:flex;"><span>    sqrt <span style="color:#f92672">&lt;-</span> realSqrt div
+</span></span><span style="display:flex;"><span>    return (sqrt <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>)
+</span></span></code></pre></div><p><strong>TypeScript</strong> doesn&rsquo;t have native support, but libraries like <a href="https://gcanti.github.io/fp-ts/">fp-ts</a> provide battle-tested implementations of <code>Either</code>, <code>Option</code>, <code>IO</code>, and many other functional abstractions with full type safety:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">pipe</span> } <span style="color:#66d9ef">from</span> <span style="color:#e6db74">&#34;fp-ts/function&#34;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">Either</span>, <span style="color:#a6e22e">chain</span>, <span style="color:#a6e22e">map</span> } <span style="color:#66d9ef">from</span> <span style="color:#e6db74">&#34;fp-ts/Either&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">sqrtOfDivisionPlusTwo</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">number</span>) <span style="color:#f92672">=&gt;</span> (<span style="color:#a6e22e">b</span>: <span style="color:#66d9ef">number</span>) <span style="color:#f92672">=&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pipe</span>(<span style="color:#a6e22e">b</span>, <span style="color:#a6e22e">safeDivision</span>(<span style="color:#a6e22e">a</span>), <span style="color:#a6e22e">chain</span>(<span style="color:#a6e22e">realSqrt</span>), <span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">addTwo</span>));
+</span></span></code></pre></div><p>These implementations handle edge cases, provide utility functions, and integrate with the broader ecosystem. Use them.</p>
+
+
+        <section id="comments">
+          <script src="https://utteranc.es/client.js" repo="gastonoterom/gastonotero-hugo" issue-term="pathname"
+            theme="gruvbox-dark" crossorigin="anonymous" async>
+            </script>
+        </section>
+  
+      </article>
+      
+
+    </div>
+  </div>
+  <footer>
+    <div class="container mt-4 pb-1">
+    <p class="small">
+        
+        
+    </p>
+</div>
+  </footer>
+
+  </main>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>
