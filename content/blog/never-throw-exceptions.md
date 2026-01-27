@@ -1,7 +1,7 @@
 ---
 id: never-throw-exceptions
 title: "Never Throw Exceptions: Make the Implicit Explicit Instead"
-description: Patterns for error typing
+description: Type-safe error handling with monads
 author: Gaston Otero
 date: "2026-01-27"
 ---
