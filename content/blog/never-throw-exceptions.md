@@ -6,6 +6,18 @@ author: Gaston Otero
 date: "2026-01-27"
 ---
 
+## Table of Contents
+
+- [Most languages have incomplete type declarations](#most-languages-have-incomplete-type-declarations)
+- [Error throwing is unpredictable](#error-throwing-is-unpredictable)
+- [Typing errors with Result<E, T>](#typing-errors-with-resulte-t)
+- [Addressing composition](#addressing-composition)
+- [Introducing map and flatMap](#introducing-map-and-flatmap)
+- [Representing absence of values with the Option wrapper](#representing-absence-of-values-with-the-option-wrapper)
+- [Abstracting the wrapper type](#abstracting-the-wrapper-type)
+- [Real-world implementations](#real-world-implementations)
+- [On the title](#on-the-title)
+
 ## Most languages have incomplete type declarations
 
 Consider this innocent-looking function type declaration:
@@ -322,3 +334,13 @@ const sqrtOfDivisionPlusTwo = (a: number) => (b: number) =>
 ```
 
 These implementations handle edge cases, provide utility functions, and integrate with the broader ecosystem. Use them.
+
+## On the title
+
+Thanks for reaching so far, and sorry for the _click-bait_ title.
+
+The "Never" in the title is deliberately provocative, there are legitimate use cases for exception throwing.
+
+The goal here was to present a new pattern and to make you aware that every `throw` creates an invisible contract that your type system can't enforce.
+
+When you want predictable, composable error handling the Result pattern is very useful.

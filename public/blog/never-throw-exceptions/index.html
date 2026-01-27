@@ -77,7 +77,19 @@
         </div>
       </header>
       <article>
-        <h2 id="most-languages-have-incomplete-type-declarations">Most languages have incomplete type declarations</h2>
+        <h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#most-languages-have-incomplete-type-declarations">Most languages have incomplete type declarations</a></li>
+<li><a href="#error-throwing-is-unpredictable">Error throwing is unpredictable</a></li>
+<li><a href="#typing-errors-with-resulte-t">Typing errors with Result&lt;E, T&gt;</a></li>
+<li><a href="#addressing-composition">Addressing composition</a></li>
+<li><a href="#introducing-map-and-flatmap">Introducing map and flatMap</a></li>
+<li><a href="#representing-absence-of-values-with-the-option-wrapper">Representing absence of values with the Option wrapper</a></li>
+<li><a href="#abstracting-the-wrapper-type">Abstracting the wrapper type</a></li>
+<li><a href="#real-world-implementations">Real-world implementations</a></li>
+<li><a href="#on-the-title">On the title</a></li>
+</ul>
+<h2 id="most-languages-have-incomplete-type-declarations">Most languages have incomplete type declarations</h2>
 <p>Consider this innocent-looking function type declaration:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">WarmGreeting</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">name</span>: <span style="color:#66d9ef">string</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">string</span>;
 </span></span></code></pre></div><p>Now, let&rsquo;s read the implementation:</p>
@@ -279,6 +291,11 @@ We won&rsquo;t go into details here, and if you know this already, this article 
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">sqrtOfDivisionPlusTwo</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">number</span>) <span style="color:#f92672">=&gt;</span> (<span style="color:#a6e22e">b</span>: <span style="color:#66d9ef">number</span>) <span style="color:#f92672">=&gt;</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pipe</span>(<span style="color:#a6e22e">b</span>, <span style="color:#a6e22e">safeDivision</span>(<span style="color:#a6e22e">a</span>), <span style="color:#a6e22e">chain</span>(<span style="color:#a6e22e">realSqrt</span>), <span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">addTwo</span>));
 </span></span></code></pre></div><p>These implementations handle edge cases, provide utility functions, and integrate with the broader ecosystem. Use them.</p>
+<h2 id="on-the-title">On the title</h2>
+<p>Thanks for reaching so far, and sorry for the <em>click-bait</em> title.</p>
+<p>The &ldquo;Never&rdquo; in the title is deliberately provocative, there are legitimate use cases for exception throwing.</p>
+<p>The goal here was to present a new pattern and to make you aware that every <code>throw</code> creates an invisible contract that your type system can&rsquo;t enforce.</p>
+<p>When you want predictable, composable error handling the Result pattern is very useful.</p>
 
 
         <section id="comments">
