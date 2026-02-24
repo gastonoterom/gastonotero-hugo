@@ -2,7 +2,7 @@
 lead: "Software Engineer"
 ---
 
-I'm a **Senior Software Engineer** who specializes in **building systems** using **Functional Programming**, **Domain-Driven Design** (DDD), **Microservices**, **Cloud** Infrastructure, **Distributed** Architectures, **Python**, **TypeScript** & **Rust**
+I'm a Software Engineer who specializes in building systems using **Functional Programming**, **Distributed Systems**, **Domain-Driven Design (DDD)** and **Microservices**.
 
 Feel free to check out my [github](https://github.com/gastonoterom), and my [youtube channel](https://www.youtube.com/@gastonoterocode).
 
